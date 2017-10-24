@@ -1,28 +1,19 @@
 """
-Python Qiwi API Wrapper 1.1
+Python Qiwi API Wrapper 1.2
 by mostm
 
 See Qiwi API Documentation: https://developer.qiwi.com/ru/qiwicom/index.html
 """
-import datetime
 
+import datetime
+from functools import partial
 import requests
 
-import config
 
-endpoint = 'https://edge.qiwi.com'
-wallet = config.Wallet
-default_headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': f"Bearer {wallet['token']}"
-}
-dt_format = "{}-{}-{}T{}:{}:{}Z"
-
-
-class Person:
+class Wallet:
     """
-    Пользователь (Ура! Хоть где-то)
+    Visa QIWI Кошелек пользователя
+
     :param number: Номер пользователя
     :type number: str
     :param token: Токен пользователя
@@ -35,25 +26,27 @@ class Person:
     :type auth_info: bool
     """
 
-    def __init__(self, number, contract_info=True, auth_info=True, user_info=True, token=wallet['token']):
+    def __init__(self, number, token, contract_info=True, auth_info=True, user_info=True):
         self.number = number
         self.token = token
         self.profile_parsed = False
         self.auth_info_enabled = auth_info
         self.contract_info_enabled = contract_info
         self.user_info_enabled = user_info
+        self.get_commission = partial(get_commission, self.token)
+        self.headers = {'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': "Bearer {0}".format(self.token)}
 
     def __repr__(self):
-        return '<Person(number={})>'.format(self.number)
+        return '<Wallet(number={0}, token={1})>'.format(self.number, self.token)
 
-    @staticmethod
-    def balance():
+    def balance(self):
         """
         Баланс Visa QIWI Wallet
         :return:
         """
-        url = f"{endpoint}/funding-sources/v1/accounts/current"
-        request = requests.get(url=url, headers=default_headers)
+        request = requests.get(url="https://edge.qiwi.com/funding-sources/v1/accounts/current", headers=self.headers)
         return request.json()
 
     def profile(self):
@@ -62,12 +55,12 @@ class Person:
         :return:
         """
         self.profile_parsed = True
-        url = f"{endpoint}/person-profile/v1/profile/current"
         params = {'authInfoEnabled': str(self.auth_info_enabled).lower(),
                   'contractInfoEnabled': str(self.contract_info_enabled).lower(),
                   'userInfoEnabled': str(self.user_info_enabled).lower()
                   }
-        request = requests.get(url=url, headers=default_headers, params=params)
+        request = requests.get(url="https://edge.qiwi.com/person-profile/v1/profile/current",
+                               headers=self.headers, params=params)
         request = request.json()
         return request
 
@@ -81,40 +74,26 @@ class Person:
         :param operation: Тип операций в отчете, для отбора (ALL, IN, OUT, QIWI_CARD) [Default: ALL]
         :type operation: str
         Максимальный допустимый интервал между startDate и endDate - 90 календарных дней.
-        :param start_date: Начальная дата поиска платежей (str в формате dt_format) [Default: Today start]
-        :param end_date: Конечная дата поиска платежей (str в формате dt_format) [Default: Today end]
+        :param start_date: Начальная дата поиска платежей
+        :type start_date: datetime.datetime
+        :param end_date: Конечная дата поиска платежей
+        :type end_date: datetime.datetime
         :param sources: Источники платежа, для отбора (QW_RUB, QW_USD, QW_EUR, CARD, MK) [Default: All specified]
         :return:
         """
-        url = "{}/payment-history/v1/persons/{}/payments".format(endpoint, self.number)
+        url = "https://edge.qiwi.com/payment-history/v1/persons/{0}/payments".format(self.number)
         params = {'rows': rows,
-                  'operation': operation
-                  }
+                  'operation': operation}
         if sources is not None:
             for source in sources:
-                string = 'sources[{}]'.format(sources.index(source))
-                params[string] = source
-        if start_date is None and end_date is None:
-            now = datetime.datetime.now()
-            month = str(now.month).zfill(2)
-            day = str(now.day).zfill(2)
-            start_date = dt_format.format(now.year, month, day, '00', '00', '00')
-            end_date = dt_format.format(now.year, month, day, '23', '59', '59')
-            params['startDate'] = start_date
-            params['endDate'] = end_date
-        else:
-            if isinstance(start_date, str) and isinstance(end_date, str):
-                if start_date[4] == '-' and start_date[7] == '-' and start_date[10] == 'T' and start_date[23] == 'Z':
-                    params['startDate'] = start_date
-                else:
-                    raise ValueError('Unknown format of start_date')
-                if end_date[4] == '-' and end_date[7] == '-' and end_date[10] == 'T' and end_date[23] == 'Z':
-                    params['endDate'] = end_date
-                else:
-                    raise ValueError('Unknown format of end_date')
+                params['sources[{0}]'.format(sources.index(source))] = source
+        if start_date is not None and end_date is not None:
+            if isinstance(start_date, datetime.datetime) and isinstance(end_date, datetime.datetime):
+                params['startDate'] = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                params['endDate'] = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
             else:
-                raise TypeError('Unknown type of start_date and end_date!')
-        request = requests.get(url=url, headers=default_headers, params=params)
+                raise TypeError('You should use datetime.datetime Type for start_date and end_date')
+        request = requests.get(url=url, headers=self.headers, params=params)
         return request.json()
 
     def stat(self, start_date, end_date, operation='ALL', sources=None):
@@ -132,68 +111,41 @@ class Person:
         :type sources: list
         :return:
         """
-        url = f"{endpoint}/payment-history/v1/persons/{self.number}/payments/total"
+        url = "https://edge.qiwi.com/payment-history/v1/persons/{self.number}/payments/total"
         params = {'operation': operation}
         if sources is not None:
             for source in sources:
-                current_source = "sources[{}]".format(sources.index(source))
-                params[current_source] = source
-        if isinstance(start_date, str) and isinstance(end_date, str):
-            if start_date[4] == '-' and start_date[7] == '-' and start_date[10] == 'T' and start_date[19] == 'Z':
-                params['startDate'] = start_date
+                params['sources[{0}]'.format(sources.index(source))] = source
+        if start_date is not None and end_date is not None:
+            if isinstance(start_date, datetime.datetime) and isinstance(end_date, datetime.datetime):
+                params['startDate'] = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                params['endDate'] = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
             else:
-                raise ValueError('Unknown format of start_date')
-            if end_date[4] == '-' and end_date[7] == '-' and end_date[10] == 'T' and end_date[19] == 'Z':
-                params['endDate'] = end_date
-            else:
-                raise ValueError('Unknown format of end_date')
-        else:
-            raise TypeError('Unknown type of start_date and end_date')
-        request = requests.get(url=url, headers=default_headers, params=params)
+                raise TypeError('You should use datetime.datetime Type for start_date and end_date')
+        request = requests.get(url=url, headers=self.headers, params=params)
         return request.json()
 
-
-class Payment:
-    """
-    Платежи
-
-    :param pid: ID провайдера
-    :type pid: int
-    :param recipient: Получатель платежа
-    :type recipient: str
-    :param amount: Сумма платежа
-    :type amount: float
-    """
-
-    def __init__(self, pid, recipient, amount):
-        self.id = pid
-        self.recipient = recipient
-        self.amount = amount
-
-    def __repr__(self):
-        return '<Payment(id={}, ' \
-               'recipient={}, ' \
-               'amount={})>' \
-               ''.format(self.id, self.recipient, self.amount)
-
-    def commission(self):
+    def commission(self, pid=None, recipient=None, amount=None):
         """
         Расчет комиссии для платежа
+        :param pid: ID провайдера
+        :param recipient: Получатель платежа
+        :param amount: Сумма платежа
         :return:
         """
-        url = "{}/sinap/providers/{}/onlineCommission".format(endpoint, self.id)
-        body = {'account': self.recipient,
+        url = "https://edge.qiwi.com/sinap/providers/{0}/onlineCommission".format(pid)
+        body = {'account': recipient,
                 'paymentMethod':
                     {'type': 'Account',
                      'accountId': '643'},
                 'purchaseTotals':
-                    {'total': {'amount': self.amount,
+                    {'total': {'amount': amount,
                                'currency': '643'}}
                 }
-        request = requests.post(url=url, headers=default_headers, json=body)
+        request = requests.post(url=url, headers=self.headers, json=body)
         return request.json()
 
-    def send(self, fields=None, comment=None):
+    def send(self, fields=None, comment=None, pid=None, recipient=None, amount=None):
         """
         Отправить платеж
         :param fields: Ручное добавление dict'а в платежи.
@@ -202,31 +154,40 @@ class Payment:
         :type fields: dict
         :param comment: Комментарий к платежу
         :type comment: str
+        :param pid: ID провайдера
+        :param recipient: Получатель платежа
+        :param amount: Сумма платежа
         :return:
         """
-        url = "{}/sinap/api/v2/terms/{}/payments".format(endpoint, id)
+        url = "https://edge.qiwi.com/sinap/api/v2/terms/{0}/payments".format(pid)
         if fields is None:
-            fields = {'account': str(self.recipient)}
+            fields = {'account': str(recipient)}
         body = {'id': str(int(1000 * datetime.datetime.utcnow().timestamp())),
-                'sum': {'amount': self.amount,
+                'sum': {'amount': float(amount),
                         'currency': '643'},
                 'paymentMethod': {'type': 'Account',
                                   'accountId': '643'},
                 'fields': fields,
-                'comment': 'Отправлено с помощью Visa QIWI Wallet API'
+                'comment': 'Отправлено с помощью pyQiwi'
                 }
         if comment is not None:
             body['comment'] = comment
-        request = requests.post(url=url, headers=default_headers, json=body)
+        request = requests.post(url=url, headers=self.headers, json=body)
         return request.json()
 
 
-def commission(pid):
+def get_commission(token, pid):
     """
     Получение стандартной комиссии
+    :param token: Токен пользователя
     :param pid: ID провайдера.
     :return:
     """
-    url = f"{endpoint}/sinap/providers/{pid}/form"
-    request = requests.get(url=url, headers=default_headers)
+    url = "https://edge.qiwi.com/sinap/providers/{0}/form".format(pid)
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': "Bearer {0}".format(token)
+    }
+    request = requests.get(url=url, headers=headers)
     return request.json()

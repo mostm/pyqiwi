@@ -1,29 +1,32 @@
 # pyQiwi
 Python QIWI API Wrapper
+
 ## Установка
-`pip install -r requirements`
-Добавьте ваш токен для API([Получить](qiwi.com/token)) в config.py(Wallet>token)
-Если вы хотите использовать функции истории, добавьте номер, на котором вы получили токен в config.py(Wallet>number)
+1. `pip install -r requirements.txt`
+2. Получите токен для Qiwi API [здесь](https://qiwi.com/api)
+3. Добавьте qiwi.py в ваш проект
+
 ## Использование
 ```python
 import qiwi
 ```
+
 ## Быстрый туториал
+
 #### Получить текущий баланс
 ```python
-import qiwi
-
-balance = qiwi.Person(number='79001234567').balance()
+wallet = qiwi.Wallet(token='', number='79001234567')
+balance = wallet.balance()
 ```
+
 #### Отправка платежа
 ```python
-import qiwi
-
-payment = qiwi.Payment(id=99, recipient='79001234567', amount=1.11).send(comment='Привет!')
+wallet = qiwi.Wallet(token='', number='79120004567')
+payment = wallet.send(id=99, recipient='79001234567', amount=1.11, comment='Привет!')
 ```
+
 #### Получить комиссию для платежа
 ```python
-import qiwi
-
-comm = qiwi.Payment(id=99, recipient='79001234567', amount=1.11).commission()
+wallet = qiwi.Wallet(token='', number='79120004567')
+comission = wallet.commission(pid=99, recipient='79001234567', amount=1.11)
 ```
