@@ -2,9 +2,7 @@
 Python QIWI API Wrapper
 
 ## Установка
-1. `pip install -r requirements.txt`
-2. Получите токен для Qiwi API [здесь](https://qiwi.com/api)
-3. Добавьте qiwi.py в ваш проект
+`pip install -U qiwipy`
 
 ## Использование
 ```python
