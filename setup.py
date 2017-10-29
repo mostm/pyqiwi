@@ -1,8 +1,9 @@
 from setuptools import setup
+from pyqiwi import __version__
 
 name = 'qiwipy'
 lib_filename = 'pyqiwi'
-version = '2.0.1'
+version = __version__
 
 desc = 'Python Qiwi API Wrapper'
 long_desc = open('README.md', 'r', encoding='utf-8').read()

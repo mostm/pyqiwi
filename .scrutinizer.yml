@@ -4,4 +4,4 @@ checks:
         duplicate_code: true
 build:
     environment:
-        python: 3.5.0
+        python: 3.6.0

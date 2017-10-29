@@ -5,10 +5,10 @@ by mostm
 See pyQiwi Documentation: pyqiwi.readthedocs.io
 """
 __title__ = 'pyQiwi'
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 __author__ = "mostm"
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2017 mostm'
+__copyright__ = 'Copyright 2017 {0}'.format(__author__)
 
 version_info = tuple(map(int, __version__.split('.')))
 
@@ -37,23 +37,19 @@ class Wallet:
     Visa QIWI Кошелек
 
     Parameters
-    ----------    
+    ----------
     token : str
         `Ключ Qiwi API`_ пользователя
-
     number : Optional[str]
         Номер для указанного кошелька
         По умолчанию - ``None``
         Если не указан, статистика и история работать не будет
-
     contract_info : Optional[bool]
         Логический признак выгрузки данных о кошельке пользователя
         По умолчанию - ``True``
-
     auth_info : Optional[bool]
         Логический признак выгрузки настроек авторизации пользователя
         По умолчанию - ``True``
-
     user_info : Optional[bool]
         Логический признак выгрузки прочих пользовательских данных
         По умолчанию - ``True``
@@ -62,7 +58,6 @@ class Wallet:
     -----------
     accounts : iterable of :class:`Account <pyqiwi.types.Account>`
         Все доступные методы оплаты для кошелька
-    
     profile : :class:`Profile <pyqiwi.types.Profile>`
         Профиль пользователя
     """

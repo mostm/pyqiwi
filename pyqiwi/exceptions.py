@@ -28,6 +28,7 @@ class APIError(Exception):
     params : dict
         Параметры вызванного метода
     """
+
     def __init__(self, msg, method_name, response=None):
         self.msg = msg
         self.method_name = method_name
@@ -45,7 +46,7 @@ def find_exception_desc(status_code, method_name):
             if isinstance(exc['method_name'], type(None)):
                 basic_msg = exc['msg']
             elif isinstance(exc['method_name'], str) and exc['method_name'] == method_name:
-                    msg = exc['msg']
+                msg = exc['msg']
             elif isinstance(exc['method_name'], list):
                 if method_name in exc['method_name']:
                     msg = exc['msg']

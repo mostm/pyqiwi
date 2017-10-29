@@ -46,7 +46,7 @@ class JsonDeserializable:
         -------
         datetime.datetime данной строки 
         """
-        return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
+        return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
 
     def __str__(self):
         d = {}
@@ -83,6 +83,7 @@ class Account(JsonDeserializable):
     balance : Optional[float]
         Псевдоним пользовательского баланса
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -118,6 +119,7 @@ class AccountType(JsonDeserializable):
     title : str
         Название счета
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -141,6 +143,7 @@ class Profile(JsonDeserializable):
     user_info : Optional[:class:`UserInfo <pyqiwi.types.UserInfo>`]
         Прочие пользовательские данные
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -180,6 +183,7 @@ class AuthInfo(JsonDeserializable):
         Дата/время регистрации QIWI Кошелька пользователя 
         (через сайт либо мобильное приложение, либо другим способом)
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -220,9 +224,12 @@ class MobilePinInfo(JsonDeserializable):
     next_mobile_pin_change : datetime.datetime
         Дата/время следующего (планового) изменения PIN-кода мобильного приложения QIWI Кошелька
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
+        last_mobile_pin_change = None
+        next_mobile_pin_change = None
         mobile_pin_used = obj['mobilePinUsed']
         if mobile_pin_used:
             last_mobile_pin_change = cls.decode_date(obj['lastMobilePinChange'])
@@ -249,9 +256,12 @@ class PassInfo(JsonDeserializable):
         Логический признак использования пароля 
         (фактически означает, что пользователь заходит на сайт)
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
+        last_pass_change = None
+        next_pass_change = None
         password_used = obj['passwordUsed']
         if password_used:
             last_pass_change = cls.decode_date(obj['lastPassChange'])
@@ -274,6 +284,7 @@ class PinInfo(JsonDeserializable):
         Логический признак использования PIN-кода
         (фактически означает, что пользователь заходил в приложение)
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -302,6 +313,7 @@ class ContractInfo(JsonDeserializable):
     identification_info : list[:class:`IdentificationInfo <pyqiwi.types.IdentificationInfo>`]
         Данные об идентификации пользователя
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -338,6 +350,7 @@ class IdentificationInfo(JsonDeserializable):
         SIMPLE, VERIFIED - упрощенная идентификация
         FULL - полная идентификация
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -373,6 +386,7 @@ class UserInfo(JsonDeserializable):
     promo_enabled : ???
         Служебная информация
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -460,6 +474,7 @@ class Transaction(JsonDeserializable):
     regular_payment_enabled : bool
         Специальное поле
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -533,6 +548,7 @@ class TransactionSum(JsonDeserializable):
     currency : str
         Валюта
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -566,6 +582,7 @@ class TransactionProvider(JsonDeserializable):
     site_url : str
         Сайт провайдера
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -599,6 +616,7 @@ class Statistics(JsonDeserializable):
     outgoing_total : list[:class:`TransactionSum <pyqiwi.types.TransactionSum>`]
         Данные об исходящих платежах, отдельно по каждой валюте
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -624,6 +642,7 @@ class Commission(JsonDeserializable):
     ranges : list[:class:`CommissionRange <pyqiwi.types.CommissionRange>`]
         Массив объектов с граничными условиями комиссий
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -653,6 +672,7 @@ class CommissionRange(JsonDeserializable):
     fixed : Optional[float/int]
         Фиксированная сумма комиссии
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -735,6 +755,7 @@ class Payment(JsonDeserializable):
     transaction : dict
         Данные о транзакции в процессинге
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -768,6 +789,7 @@ class PaymentFields(JsonDeserializable):
     -----
     Если вы хотите посмотреть исходный вид выданный Qiwi API, используйте str(PaymentFields)
     """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
