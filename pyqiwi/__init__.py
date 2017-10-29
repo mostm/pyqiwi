@@ -5,7 +5,7 @@ by mostm
 See pyQiwi Documentation: pyqiwi.readthedocs.io
 """
 __title__ = 'pyQiwi'
-__version__ = "2.0"
+__version__ = "2.0.1"
 __author__ = "mostm"
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2017 mostm'
