@@ -6,27 +6,28 @@ import six
 
 class JsonDeserializable:
     """
-    Subclasses of this class are guaranteed to be able to be created from a json-style dict or json formatted string.
-    All subclasses of this class must override de_json.
+    Субклассы этого класса гарантированно могут быть созданы из json-подобного dict'а или форматированной json строки
+    Все субклассы этого класса должны перезаписывать de_json
     """
 
     @classmethod
     def de_json(cls, json_type):
         """
-        Returns an instance of this class from the given json dict or string.
+        Returns инстанс этого класса из созданного json dict'а или строки
+        Эта функция должна быть перезаписана для каждого субкласса
 
-        This function must be overridden by subclasses.
-        :return: an instance of this class created from the given json dict or string.
+        Returns
+        -------
+        Инстанс этого класса из созданного json dict'а или строки 
         """
         raise NotImplementedError
 
     @staticmethod
     def check_json(json_type):
         """
-        Checks whether json_type is a dict or a string. If it is already a dict, it is returned as-is.
-        If it is not, it is converted to a dict by means of json.loads(json_type)
-        :param json_type:
-        :return:
+        Проверяет, json_type или dict или str.
+        Если это dict, Returns его в исходном виде
+        Иначе, Returns dict созданный из json.loads(json_type)
         """
 
         if type(json_type) == dict:
@@ -38,6 +39,13 @@ class JsonDeserializable:
 
     @staticmethod
     def decode_date(date_string):
+        """
+        Декодирует дату из строки вида отправляемого Qiwi API: %Y-%m-%dT%H:%M:%SZ
+
+        Returns
+        -------
+        datetime.datetime данной строки 
+        """
         return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
 
     def __str__(self):
@@ -52,6 +60,29 @@ class JsonDeserializable:
 
 
 class Account(JsonDeserializable):
+    """
+    Счет из Visa QIWI Кошелька
+
+    Attributes
+    ----------
+    alias : str
+        Псевдоним пользовательского баланса
+    fs_alias : str
+        Псевдоним банковского баланса
+    title : str
+        Название соответствующего счета кошелька
+    has_balance : str
+        Логический признак реального баланса в системе QIWI Кошелек 
+        (не привязанная карта, не счет мобильного телефона и т.д.)
+    currency : int
+        Код валюты баланса (number-3 ISO-4217). 
+        Возвращаются балансы в следующих валютах: 
+        643 - российский рубль, 840 - американский доллар, 978 - евро
+    type : :class:`AccountType <pyqiwi.types.AccountType>`
+        Сведения о счете
+    balance : Optional[float]
+        Псевдоним пользовательского баланса
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -77,6 +108,16 @@ class Account(JsonDeserializable):
 
 
 class AccountType(JsonDeserializable):
+    """
+    Сведения о счете из Visa QIWI Кошелька
+    
+    Attributes
+    ----------
+    id : str
+        Кодовое название счета
+    title : str
+        Название счета
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -88,6 +129,18 @@ class AccountType(JsonDeserializable):
 
 
 class Profile(JsonDeserializable):
+    """
+    Профиль пользователя Visa QIWI Кошелька
+
+    Attributes
+    ----------
+    auth_info : Optional[:class:`AuthInfo <pyqiwi.types.AuthInfo>`]
+        Настройки авторизации пользователя
+    contract_info : Optional[:class:`ContractInfo <pyqiwi.types.ContractInfo>`]
+        Информация о кошельке пользователя
+    user_info : Optional[:class:`UserInfo <pyqiwi.types.UserInfo>`]
+        Прочие пользовательские данные
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -103,6 +156,30 @@ class Profile(JsonDeserializable):
 
 
 class AuthInfo(JsonDeserializable):
+    """
+    Профиль пользователя Visa QIWI Кошелька
+
+    Attributes
+    ----------
+    bound_email : str/None
+        E-mail, привязанный к кошельку.
+        Если отсутствует, то ``None``
+    ip : str
+        IP-адрес последней пользовательской сессии
+    last_login_date : str
+        Дата/время последней сессии в QIWI Кошельке
+    mobile_pin_info : :class:`MobilePinInfo <pyqiwi.types.MobilePinInfo>`
+        Данные о PIN-коде мобильного приложения QIWI Кошелька
+    pass_info : :class:`PassInfo <pyqiwi.types.PassInfo>`
+        Данные о пароле к сайту qiwi.com
+    person_id : int
+        Номер кошелька пользователя
+    pin_info : :class:`PinInfo <pyqiwi.types.PinInfo>`
+        Данные о PIN-коде к приложению QIWI Кошелька на QIWI терминалах
+    registration_date : datetime.datetime
+        Дата/время регистрации QIWI Кошелька пользователя 
+        (через сайт либо мобильное приложение, либо другим способом)
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -130,18 +207,26 @@ class AuthInfo(JsonDeserializable):
 
 
 class MobilePinInfo(JsonDeserializable):
+    """
+    Данные о PIN-коде мобильного приложения QIWI Кошелька
+
+    Attributes
+    ----------
+    mobile_pin_used : bool
+        Логический признак использования PIN-кода 
+        (фактически означает, что мобильное приложение используется)
+    last_mobile_pin_change : datetime.datetime
+        Дата/время последнего изменения PIN-кода мобильного приложения QIWI Кошелька
+    next_mobile_pin_change : datetime.datetime
+        Дата/время следующего (планового) изменения PIN-кода мобильного приложения QIWI Кошелька
+    """
     @classmethod
     def de_json(cls, json_type):
-        """
-        Feedback Required:
-
-        У меня есть некоторые подозрения что API выдаст null,
-        если пользователь ни разу не использовал мобильное приложение QIWI Кошелька
-        """
         obj = cls.check_json(json_type)
         mobile_pin_used = obj['mobilePinUsed']
-        last_mobile_pin_change = cls.decode_date(obj['lastMobilePinChange'])
-        next_mobile_pin_change = cls.decode_date(obj['nextMobilePinChange'])
+        if mobile_pin_used:
+            last_mobile_pin_change = cls.decode_date(obj['lastMobilePinChange'])
+            next_mobile_pin_change = cls.decode_date(obj['nextMobilePinChange'])
         return cls(mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change)
 
     def __init__(self, mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change):
@@ -151,12 +236,26 @@ class MobilePinInfo(JsonDeserializable):
 
 
 class PassInfo(JsonDeserializable):
+    """
+    Данные о пароле к сайту qiwi.com
+
+    Attributes
+    ----------
+    last_pass_change : str
+        Дата/время последнего изменения пароля сайта qiwi.com
+    next_pass_change : str
+        Дата/время следующего (планового) изменения пароля сайта qiwi.com
+    password_used : bool
+        Логический признак использования пароля 
+        (фактически означает, что пользователь заходит на сайт)
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
-        last_pass_change = cls.decode_date(obj['lastPassChange'])
-        next_pass_change = cls.decode_date(obj['nextPassChange'])
         password_used = obj['passwordUsed']
+        if password_used:
+            last_pass_change = cls.decode_date(obj['lastPassChange'])
+            next_pass_change = cls.decode_date(obj['nextPassChange'])
         return cls(last_pass_change, next_pass_change, password_used)
 
     def __init__(self, last_pass_change, next_pass_change, password_used):
@@ -166,6 +265,15 @@ class PassInfo(JsonDeserializable):
 
 
 class PinInfo(JsonDeserializable):
+    """
+    Данные о PIN-коде к приложению QIWI Кошелька на QIWI терминалах
+
+    Attributes
+    ----------
+    pin_used : bool
+        Логический признак использования PIN-кода
+        (фактически означает, что пользователь заходил в приложение)
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -177,6 +285,23 @@ class PinInfo(JsonDeserializable):
 
 
 class ContractInfo(JsonDeserializable):
+    """
+    Информация о кошельке пользователя
+
+    Attributes
+    ----------
+    blocked : bool
+        Логический признак блокировки кошелька
+    contract_id : int
+        Номер кошелька пользователя
+    creation_date : datetime.datetime
+        Дата/время создания QIWI Кошелька пользователя
+        (через сайт либо мобильное приложение, либо при первом пополнении, либо другим способом)
+    features : ???
+        Служебная информация
+    identification_info : list[:class:`IdentificationInfo <pyqiwi.types.IdentificationInfo>`]
+        Данные об идентификации пользователя
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -198,6 +323,21 @@ class ContractInfo(JsonDeserializable):
 
 
 class IdentificationInfo(JsonDeserializable):
+    """
+    Данные об идентификации пользователя
+
+    Attributes
+    ----------
+    bank_alias : str
+        Акроним системы, в которой пользователь получил идентификацию:
+        QIWI - QIWI Кошелек.
+    identification_level : str
+        Текущий уровень идентификации кошелька
+        Возможные значения:
+        ANONYMOUS - без идентификации
+        SIMPLE, VERIFIED - упрощенная идентификация
+        FULL - полная идентификация
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -211,6 +351,28 @@ class IdentificationInfo(JsonDeserializable):
 
 
 class UserInfo(JsonDeserializable):
+    """
+    Прочие пользовательские данные
+
+    Attributes
+    ----------
+    default_pay_currency : int
+        Код валюты баланса кошелька по умолчанию (number-3 ISO-4217)
+    default_pay_source : ???
+        Служебная информация
+    email : str
+        E-mail пользователя
+    first_txn_id : int
+        Номер первой транзакции пользователя после регистрации
+    language : ???
+        Служебная информация
+    operator : str
+        Название мобильного оператора номера пользователя
+    phone_hash : ???
+        Служебная информация
+    promo_enabled : ???
+        Служебная информация
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -238,6 +400,66 @@ class UserInfo(JsonDeserializable):
 
 
 class Transaction(JsonDeserializable):
+    """
+    Транзакция
+
+    Attributes
+    ----------
+    txn_id : int
+        ID транзакции в процессинге
+    person_id : int
+        Номер кошелька
+    date : datetime.datetime
+        Дата/время платежа, время московское 
+    error_code : int/float
+        Код ошибки платежа
+    error : str
+        Описание ошибки
+    status : str
+        Статус платежа. Возможные значения:
+        WAITING - платеж проводится, 
+        SUCCESS - успешный платеж, 
+        ERROR - ошибка платежа.
+    type : str
+        Тип платежа. Возможные значения:
+        IN - пополнение, 
+        OUT - платеж, 
+        QIWI_CARD - платеж с карт QIWI (QVC, QVP).
+    status_text : str
+        Текстовое описание статуса платежа
+    trm_txn_id : str
+        Клиентский ID транзакции
+    account : str
+        Номер счета получателя
+    sum : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Данные о сумме платежа
+    commission : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Данные о комиссии платежа
+    total : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Данные об общей сумме платежа
+    provider : :class:`TransactionProvider <pyqiwi.types.TransactionProvider>`
+        Данные о провайдере
+    comment : str
+        Комментарий к платежу
+    currency_rate : float/int
+        Курс конвертации (если применяется в транзакции)
+    source : ???
+        ???
+    extras : ???
+        Служебная информация
+    cheque_ready : bool
+        Специальное поле
+    bank_document_available : bool
+        Специальное поле
+    bank_document_ready : bool
+        Специальное поле
+    repeat_payment_enabled : bool
+        Специальное поле
+    favorite_payment_enabled : bool
+        Специальное поле
+    regular_payment_enabled : bool
+        Специальное поле
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -301,6 +523,16 @@ class Transaction(JsonDeserializable):
 
 
 class TransactionSum(JsonDeserializable):
+    """
+    Данные о платеже
+
+    Attributes
+    ----------
+    amount : float/int
+        Сумма
+    currency : str
+        Валюта
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -314,6 +546,26 @@ class TransactionSum(JsonDeserializable):
 
 
 class TransactionProvider(JsonDeserializable):
+    """
+    Данные о провайдере
+
+    Attributes
+    ----------
+    id : int
+        ID провайдера в процессинге
+    short_name : str
+        Краткое наименование провайдера
+    long_name : str
+        Развернутое наименование провайдера
+    logo_url : str
+        Cсылка на логотип провайдера
+    description : str
+        Описание провайдера (HTML)
+    keys : str
+        Список ключевых слов
+    site_url : str
+        Сайт провайдера
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -337,6 +589,16 @@ class TransactionProvider(JsonDeserializable):
 
 
 class Statistics(JsonDeserializable):
+    """
+    Статистика платежей
+
+    Attributes
+    ----------
+    incoming_total : list[:class:`TransactionSum <pyqiwi.types.TransactionSum>`]
+        Данные о входящих платежах (пополнениях), отдельно по каждой валюте
+    outgoing_total : list[:class:`TransactionSum <pyqiwi.types.TransactionSum>`]
+        Данные об исходящих платежах, отдельно по каждой валюте
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -354,6 +616,14 @@ class Statistics(JsonDeserializable):
 
 
 class Commission(JsonDeserializable):
+    """
+    Стандартная комиссия
+
+    Attributes
+    ----------
+    ranges : list[:class:`CommissionRange <pyqiwi.types.CommissionRange>`]
+        Массив объектов с граничными условиями комиссий
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -367,21 +637,60 @@ class Commission(JsonDeserializable):
 
 
 class CommissionRange(JsonDeserializable):
+    """
+    Условия комиссии
+
+    Attributes
+    ----------
+    bound : Optional[float/int]
+        Сумма платежа, начиная с которой применяется условие
+    rate : Optional[float/int]
+        Комиссия (абсолютный множитель)
+    min : Optional[float/int]
+        Минимальная сумма комиссии
+    max : Optional[float/int]
+        Максимальная сумма комиссии
+    fixed : Optional[float/int]
+        Фиксированная сумма комиссии
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
-        bound = obj['bound']
-        fixed = obj['fixed']
-        rate = obj['rate']
-        return cls(bound, fixed, rate)
+        bound = obj.get('bound')
+        fixed = obj.get('fixed')
+        rate = obj.get('rate')
+        _min = obj.get('min')
+        _max = obj.get('max')
+        return cls(bound, fixed, rate, _min, _max)
 
-    def __init__(self, bound, fixed, rate):
+    def __init__(self, bound, fixed, rate, _min, _max):
         self.bound = bound
         self.fixed = fixed
         self.rate = rate
+        self.min = _min
+        self.max = _max
 
 
 class OnlineCommission(JsonDeserializable):
+    """
+    Подсчитанная комиссия
+
+    Attributes
+    ----------
+    provider_id : int
+        Идентификатор провайдера
+    withdraw_sum : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Общая сумма платежа
+    enrollment_sum : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Сумма платежа с учетом комиссии
+    qw_commission : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Комиссия Qiwi
+    funding_source_commission : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Комиссия платежной системы(если Qiwi, то всегда 0)
+    withdraw_to_enrollment_rate : float/int
+        ???
+    """
+
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -405,6 +714,27 @@ class OnlineCommission(JsonDeserializable):
 
 
 class Payment(JsonDeserializable):
+    """
+    Данные о принятом платеже
+
+    Attributes
+    ----------
+    id : str
+        Клиентский ID транзакции
+        (В этой библиотеке, он считается 1000*Unix timestamp)
+    terms : str
+        Идентификатор провайдера
+    fields : :class:`PaymentFields <pyqiwi.types.PaymentFields>`
+        Реквизиты платежа
+    sum : :class:`TransactionSum <pyqiwi.types.TransactionSum>`
+        Данные о сумме платежа
+    source : str
+        ???
+    comment : Optional[str]
+        Комментарий к платежу
+    transaction : dict
+        Данные о транзакции в процессинге
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
@@ -414,9 +744,7 @@ class Payment(JsonDeserializable):
         _sum = TransactionSum.de_json(obj['sum'])
         transaction = obj['transaction']
         source = obj['source']
-        comment = None
-        if 'comment' in obj:
-            comment = obj['comment']
+        comment = obj.get('comment')
         return cls(_id, terms, fields, _sum, transaction, source, comment)
 
     def __init__(self, _id, terms, fields, _sum, transaction, source, comment):
@@ -430,6 +758,16 @@ class Payment(JsonDeserializable):
 
 
 class PaymentFields(JsonDeserializable):
+    """
+    Реквизиты платежа
+
+    Данный класс представляет из себя полностью хаотичную структуру
+    Судя по документации Qiwi API, создается из исходного поля fields для платежа
+    
+    Note
+    -----
+    Если вы хотите посмотреть исходный вид выданный Qiwi API, используйте str(PaymentFields)
+    """
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)

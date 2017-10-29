@@ -5,9 +5,18 @@ from urllib.parse import urlparse
 def sources_list(sources, params):
     """
     Adds defined list of sources to params
-    :param sources: Payment sources
-    :param params: default params
-    :return: params with sources
+
+    Parameters
+    ----------
+    sources : list
+        Payment sources
+    params : dict
+        Default params
+
+    Returns
+    -------
+    dict
+        params with sources
     """
     if isinstance(sources, list):
         for source in sources:

@@ -2,15 +2,22 @@
 Python Qiwi API Wrapper 2.0
 by mostm
 
-See Qiwi API Documentation: https://developer.qiwi.com/ru/qiwicom/index.html
+See pyQiwi Documentation: pyqiwi.readthedocs.io
 """
+__title__ = 'pyQiwi'
+__version__ = "2.0"
+__author__ = "mostm"
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2017 mostm'
+
+version_info = tuple(map(int, __version__.split('.')))
 
 import datetime
 import logging
 import sys
 from functools import partial
 
-logger = logging.getLogger('pyqiwi')
+logger = logging.getLogger(__name__)
 formatter = logging.Formatter(
     '%(asctime)s (%(filename)s:%(lineno)d %(threadName)s) %(levelname)s - %(name)s: "%(message)s"'
 )
@@ -27,18 +34,37 @@ from . import exceptions, types, apihelper
 
 class Wallet:
     """
-    Visa QIWI Кошелек пользователя
+    Visa QIWI Кошелек
 
-    :param token: Токен пользователя
-    :type token: str
-    :param number: Номер пользователя (если не указан, статистика и история работать не будет)
-    :type number: str
-    :param user_info: Логический признак выгрузки настроек авторизации пользователя [Default: True]
-    :type user_info: bool
-    :param contract_info: Логический признак выгрузки данных о кошельке пользователя [Default: True]
-    :type contract_info: bool
-    :param auth_info: Логический признак выгрузки прочих пользовательских данных [Default: True]
-    :type auth_info: bool
+    Parameters
+    ----------    
+    token : str
+        `Ключ Qiwi API`_ пользователя
+
+    number : Optional[str]
+        Номер для указанного кошелька
+        По умолчанию - ``None``
+        Если не указан, статистика и история работать не будет
+
+    contract_info : Optional[bool]
+        Логический признак выгрузки данных о кошельке пользователя
+        По умолчанию - ``True``
+
+    auth_info : Optional[bool]
+        Логический признак выгрузки настроек авторизации пользователя
+        По умолчанию - ``True``
+
+    user_info : Optional[bool]
+        Логический признак выгрузки прочих пользовательских данных
+        По умолчанию - ``True``
+
+    Attributes
+    -----------
+    accounts : iterable of :class:`Account <pyqiwi.types.Account>`
+        Все доступные методы оплаты для кошелька
+    
+    profile : :class:`Profile <pyqiwi.types.Profile>`
+        Профиль пользователя
     """
 
     def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
@@ -57,12 +83,6 @@ class Wallet:
 
     @property
     def accounts(self):
-        """
-        Все доступные методы оплаты для кошелька
-        (но в API все-равно доступен только рублевый Qiwi Wallet)
-
-        :return: list(types.Account)
-        """
         result_json = apihelper.funding_sources(self.token)
         accounts = []
         for account in result_json['accounts']:
@@ -71,10 +91,18 @@ class Wallet:
 
     def balance(self, currency):
         """
-        Баланс Visa QIWI Wallet
+        Баланс Visa QIWI Кошелька
 
-        :param currency: ID валюты
-        :return: int
+        Parameters
+        ----------
+        currency : int
+            ID валюты в ``number-3 ISO-4217``
+            Например, ``643`` для российского рубля
+
+        Returns
+        -------
+        float
+            Баланс кошелька
         """
         for account in self.accounts:
             if account.currency == currency:
@@ -82,11 +110,6 @@ class Wallet:
 
     @property
     def profile(self):
-        """
-        Профиль пользователя
-
-        :return: types.Profile
-        """
         result_json = apihelper.person_profile(self.token, self.auth_info_enabled,
                                                self.contract_info_enabled, self.user_info_enabled)
         return types.Profile.de_json(result_json)
@@ -94,19 +117,43 @@ class Wallet:
     def history(self, rows=20, operation=None, start_date=None, end_date=None, sources=None):
         """
         История платежей
-        [Максимальная интенсивность запросов истории платежей - не более 100 запросов в минуту с одного IP-адреса.
-         При превышении доступ к API блокируется на 5 минут.]
-        :param rows: Число платежей в ответе, для разбивки отчета на части. (1-50) [Default: 20]
-        :type rows: int
-        :param operation: Тип операций в отчете, для отбора (ALL, IN, OUT, QIWI_CARD) [Default: ALL]
-        :type operation: str
+
+        Warning
+        -------
+        Максимальная интенсивность запросов истории платежей - не более 100 запросов в минуту с одного IP-адреса.
+        При превышении доступ к API блокируется на 5 минут.
+
+        Parameters
+        ----------
+        rows : Optional[int]
+            Число платежей в ответе, для разбивки отчета на части.
+            От 1 до 50, по умолчанию 20.
+
+        operation : Optional[str]
+            Тип операций в отчете, для отбора
+            Варианты: ALL, IN, OUT, QIWI_CARD
+            По умолчанию - ALL
+        
+        start_date : Optional[datetime.datetime]
+            Начальная дата поиска платежей
+
+        end_date : Optional[datetime.datetime]
+            Конечная дата поиска платежей
+
+        sources : Optional[list]
+            Источники платежа, для отбора
+            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK
+            По умолчанию - все указанные
+
+        Note
+        ----
+        Если вы хотите использовать startDate или endDate, вы должны указать оба параметра
         Максимальный допустимый интервал между startDate и endDate - 90 календарных дней.
-        :param start_date: Начальная дата поиска платежей
-        :type start_date: datetime.datetime
-        :param end_date: Конечная дата поиска платежей
-        :type end_date: datetime.datetime
-        :param sources: Источники платежа, для отбора (QW_RUB, QW_USD, QW_EUR, CARD, MK) [Default: All specified]
-        :return: list(types.Transaction)
+
+        Returns
+        -------
+        :class:`Transaction <pyqiwi.types.Transaction>`
+            Транзакция
         """
         result_json = apihelper.payment_history(self.token, self.number, rows, operation=operation,
                                                 start_date=start_date, end_date=end_date, sources=sources)
@@ -118,19 +165,33 @@ class Wallet:
     def stat(self, start_date=None, end_date=None, operation=None, sources=None):
         """
         Статистика платежей
+
+        Note
+        ----
         Изначально берется статистика с начала месяца
 
-        :param start_date: Начальная дата периода статистики
-        :type start_date: str
-        :param end_date: Конечная дата периода статистики
-        :type end_date: str
-        :param operation: Тип операций, учитываемых при подсчете статистики
-                          (ALL, IN, OUT, QIWI_CARD) [Default: ALL]
-        :type operation: str
-        :param sources: Источники платежа, учитываемые при подсчете статистики
-                        (QW_RUB, QW_USD, QW_EUR, CARD, MK) [Default: All-specified]
-        :type sources: list
-        :return: types.Statistics
+        Parameters
+        ----------
+        operation : Optional[str]
+            Тип операций в отчете, для отбора
+            Варианты: ALL, IN, OUT, QIWI_CARD
+            По умолчанию - ALL
+        
+        start_date : Optional[datetime.datetime]
+            Начальная дата поиска платежей
+
+        end_date : Optional[datetime.datetime]
+            Конечная дата поиска платежей
+
+        sources : Optional[list]
+            Источники платежа, для отбора
+            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK
+            По умолчанию - все указанные
+
+        Returns
+        -------
+        :class:`Statistics <pyqiwi.types.Statistics>`
+            Статистика
         """
         if start_date:
             pass
@@ -148,10 +209,25 @@ class Wallet:
     def commission(self, pid, recipient, amount):
         """
         Расчет комиссии для платежа
-        :param pid: ID провайдера
-        :param recipient: Получатель платежа
-        :param amount: Сумма платежа
-        :return: types.OnlineCommission
+
+        Parameters
+        ----------
+        pid : str
+            Идентификатор провайдера
+        
+        recipient : str
+            Номер телефона (с международным префиксом) или номер карты/счета получателя
+            В зависимости от провайдера
+
+        amount : float/int
+            Сумма платежа
+            Положительное число, округленное до 2 знаков после десятичной точки.
+            При большем числе знаков значение будет округлено до копеек в меньшую сторону.
+
+        Returns
+        -------
+        :class:`OnlineCommission <pyqiwi.types.OnlineCommission>`
+            Комиссия для платежа
         """
         result_json = apihelper.online_commission(self.token, recipient, pid, amount)
         return types.OnlineCommission.de_json(result_json)
@@ -159,16 +235,33 @@ class Wallet:
     def send(self, pid, recipient, amount, comment=None, fields=None):
         """
         Отправить платеж
-        :param fields: Ручное добавление dict'а в платежи.
-                       Требуется для специфичных платежей
-                       Например, перевод на счет в банке
-        :type fields: dict
-        :param comment: Комментарий к платежу
-        :type comment: str
-        :param pid: ID провайдера
-        :param recipient: Получатель платежа
-        :param amount: Сумма платежа
-        :return: types.Payment
+
+        Parameters
+        ----------
+        pid : str
+            Идентификатор провайдера
+        
+        recipient : str
+            Номер телефона (с международным префиксом) или номер карты/счета получателя
+            В зависимости от провайдера
+
+        amount : float/int
+            Сумма платежа
+            Положительное число, округленное до 2 знаков после десятичной точки.
+            При большем числе знаков значение будет округлено до копеек в меньшую сторону.
+
+        comment : Optional[str]
+            Комментарий к платежу
+
+        fields : dict
+            Ручное добавление dict'а в платежи.
+            Требуется для специфичных платежей
+            Например, перевод на счет в банке
+        
+        Returns
+        -------
+        :class:`Payment <pyqiwi.types.Payment>`
+            Платеж
         """
         result_json = apihelper.payments(self.token, pid, amount, recipient, comment=comment, fields=fields)
         return types.Payment.de_json(result_json)
@@ -177,9 +270,19 @@ class Wallet:
 def get_commission(token, pid):
     """
     Получение стандартной комиссии
-    :param token: Токен пользователя
-    :param pid: ID провайдера.
-    :return: types.Commission
+
+    Parameters
+    ----------
+    token : str
+        `Ключ Qiwi API`_
+
+    pid : str
+        Идентификатор провайдера
+    
+    Returns
+    -------
+    :class:`Commission <pyqiwi.types.Commission>`
+        Комиссия для платежа
     """
     result_json = apihelper.local_commission(token, pid)
     return types.Commission.de_json(result_json)

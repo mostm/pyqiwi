@@ -10,6 +10,24 @@ APICodes = {'400': [{'method_name': None, 'msg': 'Invalid request syntax (invali
 
 
 class APIError(Exception):
+    """
+    Ошибка в Qiwi API
+
+    Attributes
+    ----------
+    msg : str
+        Сообщение ошибки
+    method_name : str
+        Название метода, вызванного при возникновении ошибки
+    request : requests.Response
+        Чистый ответ от сервера, полученный от requests
+    response : str
+        Текст выданный Qiwi API, без какой либо обработки
+    method : str
+        Метод вызванный на сервере Qiwi
+    params : dict
+        Параметры вызванного метода
+    """
     def __init__(self, msg, method_name, response=None):
         self.msg = msg
         self.method_name = method_name
