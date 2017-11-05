@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 import json
 
@@ -13,7 +14,7 @@ class JsonDeserializable:
     @classmethod
     def de_json(cls, json_type):
         """
-        Returns инстанс этого класса из созданного json dict'а или строки
+        Возвращает инстанс этого класса из созданного json dict'а или строки
         Эта функция должна быть перезаписана для каждого субкласса
 
         Returns
@@ -26,8 +27,8 @@ class JsonDeserializable:
     def check_json(json_type):
         """
         Проверяет, json_type или dict или str.
-        Если это dict, Returns его в исходном виде
-        Иначе, Returns dict созданный из json.loads(json_type)
+        Если это dict, возвращает его в исходном виде
+        Иначе, возвращает dict созданный из json.loads(json_type)
         """
 
         if type(json_type) == dict:
@@ -752,7 +753,7 @@ class Payment(JsonDeserializable):
         ???
     comment : Optional[str]
         Комментарий к платежу
-    transaction : dict
+    transaction : :class:`Payment.Transaction <pyqiwi.types.Payment.Transaction>`
         Данные о транзакции в процессинге
     """
 
@@ -763,7 +764,7 @@ class Payment(JsonDeserializable):
         terms = obj['terms']
         fields = PaymentFields.de_json(obj['fields'])
         _sum = TransactionSum.de_json(obj['sum'])
-        transaction = obj['transaction']
+        transaction = cls.Transaction.de_json(obj['transaction'])
         source = obj['source']
         comment = obj.get('comment')
         return cls(_id, terms, fields, _sum, transaction, source, comment)
@@ -777,17 +778,45 @@ class Payment(JsonDeserializable):
         self.source = source
         self.comment = comment
 
+    class Transaction(JsonDeserializable):
+        """
+        Данные о транзакции в процессинге
+
+        Attributes
+        ----------
+        id : str
+            ID транзакции
+        state : str
+            Статус транзакции(в момент написания, только Accepted)
+        """
+
+        @classmethod
+        def de_json(cls, json_type):
+            obj = cls.check_json(json_type)
+            _id = obj.get('id')
+            state = obj.get('state').get('code')
+            return cls(_id, state)
+
+        def __init__(self, _id, state):
+            self.id = _id
+            self.state = state
+
 
 class PaymentFields(JsonDeserializable):
     """
     Реквизиты платежа
 
-    Данный класс представляет из себя полностью хаотичную структуру
+    Данный класс представляет из себя хаотичную структуру(но всегда присутствует "account")
     Судя по документации Qiwi API, создается из исходного поля fields для платежа
     
     Note
     -----
     Если вы хотите посмотреть исходный вид выданный Qiwi API, используйте str(PaymentFields)
+
+    Attributes
+    ----------
+    account : str
+        Получатель платежа
     """
 
     @classmethod

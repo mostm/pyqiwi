@@ -1,11 +1,21 @@
+# -*- coding: utf-8 -*-
+import logging
 from datetime import datetime
+from sys import stderr
 
 import requests
 
-import pyqiwi
 from . import exceptions, util
 
-logger = pyqiwi.logger
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter(
+    '%(asctime)s (%(filename)s:%(lineno)d %(threadName)s) %(levelname)s - %(name)s: "%(message)s"'
+)
+console_output_handler = logging.StreamHandler(stderr)
+console_output_handler.setFormatter(formatter)
+logger.addHandler(console_output_handler)
+logger.setLevel(logging.ERROR)
+ad = True
 proxy = None
 session = requests.session()
 API_URL = 'https://edge.qiwi.com/{0}'
@@ -48,7 +58,7 @@ def _check_result(method_name, result):
         raise exceptions.APIError(msg, method_name, response=result)
     try:
         result_json = result.json()
-    except:
+    except Exception:
         msg = 'The server returned an invalid JSON response. Response body:\n[{0}]' \
             .format(result.text.encode('utf8'))
         raise exceptions.APIError(msg, method_name, response=result)
@@ -119,11 +129,16 @@ def payments(token, pid, amount, recipient, comment=None, fields=None):
             'fields': fields}
     if comment:
         body['comment'] = comment
-    elif pyqiwi.ad:
+    elif ad:
         body['comment'] = 'Отправлено с помощью pyQiwi'
     return _make_request(token, api_method, method='post', json=body)
 
 
 def local_commission(token, pid):
     api_method = "sinap/providers/{0}/form".format(pid)
+    return _make_request(token, api_method)
+
+
+def get_transaction(token, txn_id, txn_type):
+    api_method = 'payment-history/v1/transactions/{0}?type={1}'.format(txn_id, txn_type)
     return _make_request(token, api_method)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 from urllib.parse import urlparse
 
@@ -39,5 +40,8 @@ def url_params(url):
     parsed_url = urlparse(url)
     params = {}
     for param in parsed_url.query.split('&'):
-        params[param.split('=')[0]] = param.split('=')[1]
+        try:
+            params[param.split('=')[0]] = param.split('=')[1]
+        except IndexError:
+            params[param.split('=')[0]] = None
     return params

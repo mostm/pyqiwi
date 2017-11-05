@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .util import url_params
 
 APICodes = {'400': [{'method_name': None, 'msg': 'Invalid request syntax (invalid format of data)'}],
@@ -34,7 +35,7 @@ class APIError(Exception):
         self.method_name = method_name
         self.response = response.text
         self.request = response
-        self.method = response.path_url
+        self.method = response.request.path_url
         self.params = url_params(response.request.url)
 
 

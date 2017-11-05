@@ -1,35 +1,21 @@
+# -*- coding: utf-8 -*-
 """
 Python Qiwi API Wrapper 2.0
 by mostm
 
 See pyQiwi Documentation: pyqiwi.readthedocs.io
 """
+import datetime
+from functools import partial
+
+from . import types, apihelper
+
 __title__ = 'pyQiwi'
-__version__ = "2.0.4"
+__version__ = "2.0.5"
 __author__ = "mostm"
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2017 {0}'.format(__author__)
-
 version_info = tuple(map(int, __version__.split('.')))
-
-import datetime
-import logging
-import sys
-from functools import partial
-
-logger = logging.getLogger(__name__)
-formatter = logging.Formatter(
-    '%(asctime)s (%(filename)s:%(lineno)d %(threadName)s) %(levelname)s - %(name)s: "%(message)s"'
-)
-
-console_output_handler = logging.StreamHandler(sys.stderr)
-console_output_handler.setFormatter(formatter)
-logger.addHandler(console_output_handler)
-
-logger.setLevel(logging.ERROR)
-ad = True
-
-from . import exceptions, types, apihelper
 
 
 class Wallet:
@@ -123,21 +109,17 @@ class Wallet:
         rows : Optional[int]
             Число платежей в ответе, для разбивки отчета на части.
             От 1 до 50, по умолчанию 20.
-
         operation : Optional[str]
-            Тип операций в отчете, для отбора
-            Варианты: ALL, IN, OUT, QIWI_CARD
+            Тип операций в отчете, для отбора\n
+            Варианты: ALL, IN, OUT, QIWI_CARD\n
             По умолчанию - ALL
-        
         start_date : Optional[datetime.datetime]
             Начальная дата поиска платежей
-
         end_date : Optional[datetime.datetime]
             Конечная дата поиска платежей
-
         sources : Optional[list]
-            Источники платежа, для отбора
-            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK
+            Источники платежа, для отбора\n
+            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK\n
             По умолчанию - все указанные
 
         Note
@@ -147,8 +129,8 @@ class Wallet:
 
         Returns
         -------
-        :class:`Transaction <pyqiwi.types.Transaction>`
-            Транзакция
+        list[:class:`Transaction <pyqiwi.types.Transaction>`]
+            Транзакции
         """
         result_json = apihelper.payment_history(self.token, self.number, rows, operation=operation,
                                                 start_date=start_date, end_date=end_date, sources=sources)
@@ -156,6 +138,25 @@ class Wallet:
         for transaction in result_json['data']:
             transactions.append(types.Transaction.de_json(transaction))
         return transactions
+
+    def transaction(self, txn_id, txn_type):
+        """
+        Получение транзакции из Qiwi API
+
+        Parameters
+        ----------
+        txn_id : str
+            ID транзакции
+        txn_type : str
+            Тип транзакции (IN/OUT)
+
+        Returns
+        -------
+        :class:`Transaction <pyqiwi.types.Transaction>`
+            Транзакция
+        """
+        result_json = apihelper.get_transaction(self.token, txn_id, txn_type)
+        return types.Transaction.de_json(result_json)
 
     def stat(self, start_date=None, end_date=None, operation=None, sources=None):
         """
