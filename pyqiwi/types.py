@@ -46,9 +46,7 @@ class JsonDeserializable:
         -------
         datetime.datetime данной строки 
         """
-        if date_string.endswith('+03:00'):
-            date_string.replace('+03:00', 'Z')
-        return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
+        return datetime.datetime.strptime(date_string.replace('+03:00', 'Z'), "%Y-%m-%dT%H:%M:%SZ")
 
     def __str__(self):
         d = {}
