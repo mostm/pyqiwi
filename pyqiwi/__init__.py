@@ -8,13 +8,13 @@ See pyQiwi Documentation: pyqiwi.readthedocs.io
 import datetime
 from functools import partial
 
-from . import types, apihelper
+from . import apihelper, types
 
 __title__ = 'pyQiwi'
-__version__ = "2.0.5"
+__version__ = "2.0.6"
 __author__ = "mostm"
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2017 {0}'.format(__author__)
+__copyright__ = 'Copyright 2017-2018 {0}'.format(__author__)
 version_info = tuple(map(int, __version__.split('.')))
 
 
@@ -25,27 +25,28 @@ class Wallet:
     Parameters
     ----------
     token : str
-        `Ключ Qiwi API`_ пользователя
+        `Ключ Qiwi API`_ пользователя.
     number : Optional[str]
-        Номер для указанного кошелька
-        По умолчанию - ``None``
-        Если не указан, статистика и история работать не будет
+        Номер для указанного кошелька.
+        По умолчанию - ``None``.
+        Если не указан, статистика и история работать не будет.
     contract_info : Optional[bool]
-        Логический признак выгрузки данных о кошельке пользователя
-        По умолчанию - ``True``
+        Логический признак выгрузки данных о кошельке пользователя.
+        По умолчанию - ``True``.
     auth_info : Optional[bool]
-        Логический признак выгрузки настроек авторизации пользователя
-        По умолчанию - ``True``
+        Логический признак выгрузки настроек авторизации пользователя.
+        По умолчанию - ``True``.
     user_info : Optional[bool]
-        Логический признак выгрузки прочих пользовательских данных
-        По умолчанию - ``True``
+        Логический признак выгрузки прочих пользовательских данных.
+        По умолчанию - ``True``.
 
     Attributes
     -----------
     accounts : iterable of :class:`Account <pyqiwi.types.Account>`
-        Все доступные методы оплаты для кошелька
+        Все доступные методы оплаты для кошелька.
+        Использовать можно только рублевый Visa QIWI Wallet.
     profile : :class:`Profile <pyqiwi.types.Profile>`
-        Профиль пользователя
+        Профиль пользователя.
     """
 
     def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
@@ -77,17 +78,29 @@ class Wallet:
         Parameters
         ----------
         currency : int
-            ID валюты в ``number-3 ISO-4217``
-            Например, ``643`` для российского рубля
+            ID валюты в ``number-3 ISO-4217``.
+            Например, ``643`` для российского рубля.
 
         Returns
         -------
         float
-            Баланс кошелька
+            Баланс кошелька.
+
+        Raises
+        ------
+        ValueError
+            Во всех добавленных вариантах оплаты с указанного Qiwi-кошелька нет информации об балансе и его сумме.
+            Скорее всего это временная ошибка Qiwi API, и вам стоит попробовать позже.
+            Так же, эта ошибка может быть вызвана только-что зарегистрированным Qiwi-кошельком,
+             либо довольно старым Qiwi-кошельком, которому необходимо изменение пароля.
         """
         for account in self.accounts:
-            if account.currency == currency:
+            if account.currency == currency and account.balance and account.balance.get('amount'):
                 return account.balance.get('amount')
+        raise ValueError("There is no Payment Account that has balance and amount on it."
+                         " Maybe this is temporary Qiwi API error, you should try again later."
+                         " Also, this error can be caused by just registered Qiwi Account or "
+                         "really old Qiwi Account that needs password change.")
 
     @property
     def profile(self):
@@ -110,21 +123,21 @@ class Wallet:
             Число платежей в ответе, для разбивки отчета на части.
             От 1 до 50, по умолчанию 20.
         operation : Optional[str]
-            Тип операций в отчете, для отбора\n
-            Варианты: ALL, IN, OUT, QIWI_CARD\n
-            По умолчанию - ALL
+            Тип операций в отчете, для отбора.
+            Варианты: ALL, IN, OUT, QIWI_CARD.
+            По умолчанию - ALL.
         start_date : Optional[datetime.datetime]
-            Начальная дата поиска платежей
+            Начальная дата поиска платежей.
         end_date : Optional[datetime.datetime]
-            Конечная дата поиска платежей
+            Конечная дата поиска платежей.
         sources : Optional[list]
-            Источники платежа, для отбора\n
-            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK\n
-            По умолчанию - все указанные
+            Источники платежа, для отбора.
+            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK.
+            По умолчанию - все указанные.
 
         Note
         ----
-        Если вы хотите использовать startDate или endDate, вы должны указать оба параметра
+        Если вы хотите использовать startDate или endDate, вы должны указать оба параметра.
         Максимальный допустимый интервал между startDate и endDate - 90 календарных дней.
 
         Returns
@@ -146,9 +159,9 @@ class Wallet:
         Parameters
         ----------
         txn_id : str
-            ID транзакции
+            ID транзакции.
         txn_type : str
-            Тип транзакции (IN/OUT)
+            Тип транзакции (IN/OUT/QIWI_CARD).
 
         Returns
         -------
@@ -169,20 +182,17 @@ class Wallet:
         Parameters
         ----------
         operation : Optional[str]
-            Тип операций в отчете, для отбора
-            Варианты: ALL, IN, OUT, QIWI_CARD
-            По умолчанию - ALL
-        
+            Тип операций в отчете, для отбора.
+            Варианты: ALL, IN, OUT, QIWI_CARD.
+            По умолчанию - ALL.
         start_date : Optional[datetime.datetime]
-            Начальная дата поиска платежей
-
+            Начальная дата поиска платежей.
         end_date : Optional[datetime.datetime]
-            Конечная дата поиска платежей
-
+            Конечная дата поиска платежей.
         sources : Optional[list]
-            Источники платежа, для отбора
-            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK
-            По умолчанию - все указанные
+            Источники платежа, для отбора.
+            Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK.
+            По умолчанию - все указанные.
 
         Returns
         -------
@@ -209,14 +219,12 @@ class Wallet:
         Parameters
         ----------
         pid : str
-            Идентификатор провайдера
-        
+            Идентификатор провайдера.
         recipient : str
-            Номер телефона (с международным префиксом) или номер карты/счета получателя
-            В зависимости от провайдера
-
+            Номер телефона (с международным префиксом) или номер карты/счета получателя.
+            В зависимости от провайдера.
         amount : float/int
-            Сумма платежа
+            Сумма платежа.
             Положительное число, округленное до 2 знаков после десятичной точки.
             При большем числе знаков значение будет округлено до копеек в меньшую сторону.
 
@@ -235,24 +243,20 @@ class Wallet:
         Parameters
         ----------
         pid : str
-            Идентификатор провайдера
-        
+            Идентификатор провайдера.
         recipient : str
-            Номер телефона (с международным префиксом) или номер карты/счета получателя
-            В зависимости от провайдера
-
+            Номер телефона (с международным префиксом) или номер карты/счета получателя.
+            В зависимости от провайдера.
         amount : float/int
-            Сумма платежа
+            Сумма платежа.
             Положительное число, округленное до 2 знаков после десятичной точки.
             При большем числе знаков значение будет округлено до копеек в меньшую сторону.
-
         comment : Optional[str]
-            Комментарий к платежу
-
+            Комментарий к платежу.
         fields : dict
             Ручное добавление dict'а в платежи.
-            Требуется для специфичных платежей
-            Например, перевод на счет в банке
+            Требуется для специфичных платежей.
+            Например, перевод на счет в банке.
         
         Returns
         -------
@@ -271,9 +275,8 @@ def get_commission(token, pid):
     ----------
     token : str
         `Ключ Qiwi API`_
-
     pid : str
-        Идентификатор провайдера
+        Идентификатор провайдера.
     
     Returns
     -------
