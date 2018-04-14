@@ -39,7 +39,7 @@ class JsonDeserializable:
             raise ValueError("json_type should be a json dict or string.")
 
     @staticmethod
-    def decode_date(date_string):
+    def decode_date(date_string: str):
         """
         Декодирует дату из строки вида отправляемого Qiwi API: %Y-%m-%dT%H:%M:%SZ
 
@@ -47,7 +47,10 @@ class JsonDeserializable:
         -------
         datetime.datetime данной строки 
         """
-        return datetime.datetime.strptime(date_string.replace('+03:00', 'Z'), "%Y-%m-%dT%H:%M:%SZ")
+        if isinstance(date_string, str):
+            return datetime.datetime.strptime(date_string.replace('+03:00', 'Z'), "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            raise TypeError('types.JsonDeserializable.decode_date only accepts date_string as str type')
 
     def __str__(self):
         d = {}
@@ -190,12 +193,18 @@ class AuthInfo(JsonDeserializable):
         obj = cls.check_json(json_type)
         bound_email = obj['boundEmail']
         ip = obj['ip']
-        last_login_date = cls.decode_date(obj['lastLoginDate'])
+        if obj['lastLoginDate']:
+            last_login_date = cls.decode_date(obj['lastLoginDate'])
+        else:
+            last_login_date = None
         mobile_pin_info = MobilePinInfo.de_json(obj['mobilePinInfo'])
         pass_info = PassInfo.de_json(obj['passInfo'])
         person_id = obj['personId']
         pin_info = PinInfo.de_json(obj['pinInfo'])
-        registration_date = cls.decode_date(obj['registrationDate'])
+        if obj['registrationDate']:
+            registration_date = cls.decode_date(obj['registrationDate'])
+        else:
+            registration_date = None
         return cls(bound_email, ip, last_login_date, mobile_pin_info,
                    pass_info, person_id, pin_info, registration_date)
 
@@ -233,8 +242,12 @@ class MobilePinInfo(JsonDeserializable):
         next_mobile_pin_change = None
         mobile_pin_used = obj['mobilePinUsed']
         if mobile_pin_used:
-            last_mobile_pin_change = cls.decode_date(obj['lastMobilePinChange'])
-            next_mobile_pin_change = cls.decode_date(obj['nextMobilePinChange'])
+            last_mobile_pin_change = None
+            next_mobile_pin_change = None
+            if obj['lastMobilePinChange']:
+                last_mobile_pin_change = cls.decode_date(obj['lastMobilePinChange'])
+            if obj['nextMobilePinChange']:
+                next_mobile_pin_change = cls.decode_date(obj['nextMobilePinChange'])
         return cls(mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change)
 
     def __init__(self, mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change):
@@ -265,8 +278,12 @@ class PassInfo(JsonDeserializable):
         next_pass_change = None
         password_used = obj['passwordUsed']
         if password_used:
-            last_pass_change = cls.decode_date(obj['lastPassChange'])
-            next_pass_change = cls.decode_date(obj['nextPassChange'])
+            last_pass_change = None
+            next_pass_change = None
+            if obj['lastPassChange']:
+                last_pass_change = cls.decode_date(obj['lastPassChange'])
+            if obj['nextPassChange']:
+                next_pass_change = cls.decode_date(obj['nextPassChange'])
         return cls(last_pass_change, next_pass_change, password_used)
 
     def __init__(self, last_pass_change, next_pass_change, password_used):
@@ -320,7 +337,10 @@ class ContractInfo(JsonDeserializable):
         obj = cls.check_json(json_type)
         blocked = obj['blocked']
         contract_id = obj['contractId']
-        creation_date = cls.decode_date(obj['creationDate'])
+        if obj['creationDate']:
+            creation_date = cls.decode_date(obj['creationDate'])
+        else:
+            creation_date = None
         features = obj['features']
         identification_info = []
         for _id in obj['identificationInfo']:
@@ -481,7 +501,10 @@ class Transaction(JsonDeserializable):
         obj = cls.check_json(json_type)
         txn_id = obj['txnId']
         person_id = obj['personId']
-        date = cls.decode_date(obj['date'])
+        if obj['date']:
+            date = cls.decode_date(obj['date'])
+        else:
+            date = None
         error_code = obj['errorCode']
         error = obj['error']
         status = obj['status']

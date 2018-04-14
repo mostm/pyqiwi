@@ -11,7 +11,7 @@ from functools import partial
 from . import apihelper, types
 
 __title__ = 'pyQiwi'
-__version__ = "2.0.6"
+__version__ = "2.0.7"
 __author__ = "mostm"
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2017-2018 {0}'.format(__author__)
