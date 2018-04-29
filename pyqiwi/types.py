@@ -2,6 +2,7 @@
 import datetime
 import json
 
+import parse
 import six
 
 
@@ -48,7 +49,19 @@ class JsonDeserializable:
         datetime.datetime данной строки 
         """
         if isinstance(date_string, str):
-            return datetime.datetime.strptime(date_string.replace('+03:00', 'Z'), "%Y-%m-%dT%H:%M:%SZ")
+            # QIWI, BRING MORE CHANGES TO DATE STRING FORMAT, SO EVERYTHING WONT WORK AGAIN.
+            dt = parse.parse('{YEAR}-{MONTH}-{DATE}T{HOUR}:{MINUTE}:{SECOND}+{TIMEZONE}', date_string)
+            dt = dt.named
+            if '.' in dt['SECOND']:
+                dt_secs = parse.parse('{SECOND}.{MILLISECOND}', dt['SECOND'])
+                dt['SECOND'] = dt_secs.named['SECOND']
+                dt['MILLISECOND'] = dt_secs.named['MILLISECOND']
+            else:
+                dt['MILLISECOND'] = '00'
+            dt['TIMEZONE'] = dt['TIMEZONE'].replace(':', '')
+            return datetime.datetime.strptime(
+                '{YEAR}-{MONTH}-{DATE}T{HOUR}:{MINUTE}:{SECOND}.{MILLISECOND}+{TIMEZONE}'.format(**dt),
+                '%Y-%m-%dT%H:%M:%S.%f%z')
         else:
             raise TypeError('types.JsonDeserializable.decode_date only accepts date_string as str type')
 
@@ -411,14 +424,14 @@ class UserInfo(JsonDeserializable):
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
-        default_pay_currency = obj['defaultPayCurrency']
-        default_pay_source = obj['defaultPaySource']
-        email = obj['email']
-        first_txn_id = obj['firstTxnId']
-        language = obj['language']
-        operator = obj['operator']
-        phone_hash = obj['phoneHash']
-        promo_enabled = obj['promoEnabled']
+        default_pay_currency = obj.get('defaultPayCurrency')
+        default_pay_source = obj.get('defaultPaySource')
+        email = obj.get('email')
+        first_txn_id = obj.get('firstTxnId')
+        language = obj.get('language')
+        operator = obj.get('operator')
+        phone_hash = obj.get('phoneHash')
+        promo_enabled = obj.get('promoEnabled')
         return cls(default_pay_currency, default_pay_source, email, first_txn_id,
                    language, operator, phone_hash, promo_enabled)
 

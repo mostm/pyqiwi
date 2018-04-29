@@ -11,7 +11,7 @@ from functools import partial
 from . import apihelper, types
 
 __title__ = 'pyQiwi'
-__version__ = "2.0.7"
+__version__ = "2.0.8"
 __author__ = "mostm"
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2017-2018 {0}'.format(__author__)
@@ -207,7 +207,7 @@ class Wallet:
         if end_date:
             pass
         else:
-            end_date = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
+            end_date = datetime.datetime.utcnow()
         result_json = apihelper.total_payment_history(self.token, self.number, start_date, end_date,
                                                       operation=operation, sources=sources)
         return types.Statistics.de_json(result_json)

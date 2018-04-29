@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from setuptools import setup
+
 from pyqiwi import __version__
 
 name = 'qiwipy'
@@ -19,7 +21,7 @@ classifiers = [
     'Programming Language :: Python :: 3.6',
 ]
 keywords = 'qiwi python api wrapper lib'
-install_requires = ['requests>=2.18.4,<3']
+install_requires = ['requests>=2.18.4,<3', 'parse==1.8.2']
 
 
 setup(
