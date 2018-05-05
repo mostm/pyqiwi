@@ -71,7 +71,7 @@ class Wallet:
             accounts.append(types.Account.de_json(account))
         return accounts
 
-    def balance(self, currency):
+    def balance(self, currency=643):
         """
         Баланс Visa QIWI Кошелька
 
@@ -266,6 +266,46 @@ class Wallet:
         result_json = apihelper.payments(self.token, pid, amount, recipient, comment=comment, fields=fields)
         return types.Payment.de_json(result_json)
 
+    def identification(self, birth_date, first_name, middle_name, last_name, passport, inn=None, snils=None, oms=None):
+        """
+        Идентификация пользователя
+
+        Данный запрос позволяет отправить данные для упрощенной идентификации своего QIWI кошелька.
+
+        Warnings
+        --------
+        Данный метод не тестируется, соответственно я не могу гарантировать того что он будет работать как должен.
+        Вы делаете это на свой страх и риск.
+
+        Parameters
+        ----------
+        birth_date : str
+            Дата рождения пользователя (в формате “ГГГГ-ММ-ДД”)
+        first_name : str
+            Имя пользователя
+        middle_name : str
+            Отчество пользователя
+        last_name : str
+            Фамилия пользователя
+        passport : str
+            Серия и номер паспорта пользователя (только цифры)
+        inn : str
+            ИНН пользователя
+        snils : str
+            Номер СНИЛС пользователя
+        oms : str
+            Номер полиса ОМС пользователя
+
+        Returns
+        -------
+        :class:`Identity <pyqiwi.types.Identity>`
+            Текущая идентификация пользователя.
+            Параметр внутри отвечающий за подтверждение успешной идентификации: Identity.check
+        """
+        wallet = self.number.replace('+', '')
+        result_json = apihelper.identification(self.token, wallet, birth_date, first_name, middle_name, last_name,
+                                               passport, inn, snils, oms)
+        return types.Identity.de_json(result_json, inn)
 
 def get_commission(token, pid):
     """

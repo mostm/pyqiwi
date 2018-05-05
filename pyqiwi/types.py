@@ -865,3 +865,70 @@ class PaymentFields(JsonDeserializable):
 
     def __init__(self):
         pass
+
+
+class Identity(JsonDeserializable):
+    """
+    Идентификация
+
+    Attributes
+    ----------
+    id : int
+        Номер кошелька пользователя
+    type : str
+        Текущий уровень идентификации кошелька:
+        SIMPLE - без идентификации.
+        VERIFIED - упрощенная идентификация (данные для идентификации успешно прошли проверку).
+        FULL – если кошелек уже ранее получал полную идентификацию по данным ФИО, номеру паспорта и дате рождения.
+    birth_date : str
+        Дата рождения пользователя
+    first_name : str
+        Имя пользователя
+    middle_name : str
+        Отчество пользователя
+    last_name : str
+        Фамилия пользователя
+    passport : str
+        Серия и номер паспорта пользователя
+    inn : str
+        ИНН пользователя
+    snils : str
+        Номер СНИЛС пользователя
+    oms : str
+        Номер полиса ОМС пользователя
+    check : bool
+        Идентификация кошелька выполнена?
+        (Используются варианты предлагаемые документацией Qiwi API)
+    """
+
+    @classmethod
+    def de_json(cls, json_type, base_inn):
+        obj = cls.check_json(json_type)
+        _id = obj.get('id')
+        _type = obj.get('type')
+        birth_date = obj.get('birthDate')
+        first_name = obj.get('firstName')
+        middle_name = obj.get('middleName')
+        last_name = obj.get('lastName')
+        passport = obj.get('passport')
+        inn = obj.get('inn')
+        snils = obj.get('snils')
+        oms = obj.get('oms')
+        return cls(_id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms, base_inn)
+
+    def __init__(self, _id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms, base_inn):
+        self.id = _id
+        self.type = _type
+        self.birth_date = birth_date
+        self.first_name = first_name
+        self.middle_name = middle_name
+        self.last_name = last_name
+        self.passport = passport
+        self.inn = inn
+        self.snils = snils
+        self.oms = oms
+        self.base_inn = base_inn
+
+    @property
+    def check(self):
+        return self.type == 'VERIFIED' and self.base_inn != self.inn

@@ -142,3 +142,24 @@ def local_commission(token, pid):
 def get_transaction(token, txn_id, txn_type):
     api_method = 'payment-history/v1/transactions/{0}?type={1}'.format(txn_id, txn_type)
     return _make_request(token, api_method)
+
+
+def identification(token, wallet, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms):
+    api_method = 'identification/v1/persons/{0}/identification'.format(wallet)
+    if inn is None:
+        inn = ""
+    if snils is None:
+        snils = ""
+    if oms is None:
+        oms = ""
+    identity = {
+        "birthDate": birth_date,
+        "firstName": first_name,
+        "middleName": middle_name,
+        "lastName": last_name,
+        "passport": passport,
+        "inn": inn,
+        "snils": snils,
+        "oms": oms
+    }
+    return _make_request(token, api_method, method='post', json=identity)
