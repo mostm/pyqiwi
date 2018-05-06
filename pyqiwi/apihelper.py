@@ -83,6 +83,25 @@ def funding_sources(token):
     return _make_request(token, api_method)
 
 
+def get_by_alias(token, person_id):
+    # V2 alternative to funding_sources
+    api_method = 'funding-sources/v2/persons/{0}/accounts'.format(person_id)
+    return _make_request(token, api_method)
+
+
+def get_accounts_offer(token, person_id):
+    api_method = 'funding-sources/v2/persons/{0}/accounts/offer'.format(person_id)
+    return _make_request(token, api_method)
+
+
+def create_account(token, person_id, dto):
+    api_method = '/funding-sources/v2/persons/{0}/accounts'.format(person_id)
+    body = {
+        "accountAlias": dto
+    }
+    return _make_request(token, api_method, method='post', json=body)
+
+
 def payment_history(token, number, rows, operation=None, start_date=None, end_date=None, sources=None,
                     next_txn_date=None, next_txn_id=None):
     api_method = "payment-history/v2/persons/{0}/payments".format(number)

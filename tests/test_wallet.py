@@ -49,3 +49,10 @@ class TestWallet:
         assert isinstance(qiwi_wallet, Wallet)
         stat = qiwi_wallet.stat()
         assert type(stat) == pyqiwi.types.Statistics
+
+    def test_check_accounts(self):
+        qiwi_wallet = Wallet(TOKEN, number=NUMBER)
+        assert isinstance(qiwi_wallet, Wallet)
+        accounts = qiwi_wallet.offered_accounts
+        for account in accounts:
+            assert type(account) == pyqiwi.types.Account

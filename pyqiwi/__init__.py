@@ -47,6 +47,8 @@ class Wallet:
         Использовать можно только рублевый Visa QIWI Wallet.
     profile : :class:`Profile <pyqiwi.types.Profile>`
         Профиль пользователя.
+    offered_accounts : iterable of :class:`Account <pyqiwi.types.Account>`
+        Доступные счета для создания
     """
 
     def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
@@ -117,7 +119,8 @@ class Wallet:
 
         Warning
         -------
-        Максимальная интенсивность запросов истории платежей - не более 100 запросов в минуту для одного и того же номера кошелька.
+        Максимальная интенсивность запросов истории платежей - не более 100 запросов в минуту
+         для одного и того же номера кошелька.
         При превышении доступ к API блокируется на 5 минут.
 
         Parameters
@@ -322,6 +325,33 @@ class Wallet:
                                                passport, inn, snils, oms)
         result_json['base_inn'] = inn
         return types.Identity.de_json(result_json)
+
+    def create_account(self, account_alias):
+        """
+        Создание счета-баланса в Visa QIWI Wallet
+
+        Parameters
+        ----------
+        account_alias : str
+            Псевдоним нового счета.
+            Один из доступных в Wallet.offered_accounts.
+
+        Returns
+        -------
+        bool
+            Был ли успешно создан счет?
+        """
+        created = apihelper.create_account(self.token, self.number, account_alias)
+        return created
+
+    @property
+    def offered_accounts(self):
+        result_json = apihelper.get_accounts_offer(self.token, self.number)
+        accounts = []
+        for account in result_json:
+            accounts.append(types.Account.de_json(account))
+        return accounts
+
 
 def get_commission(token, pid):
     """
