@@ -377,6 +377,53 @@ class Wallet:
         else:
             return apihelper.cheque_file(self.token, txn_id, txn_type, file_format)
 
+    def qiwi_transfer(self, account, amount, comment=None):
+        """
+        Перевод на Qiwi Кошелек
+
+        Parameters
+        ----------
+        account : str
+            Номер Qiwi Кошелька
+        amount : float
+            Сумма перевода
+        comment : str
+            Комментарий
+
+        Returns
+        -------
+        :class:`Payment <pyqiwi.types.Payment>`
+            Платеж
+        """
+        return self.send("99", account, amount, comment=comment)
+
+    def mobile(self, account, amount):
+        """
+        Оплата мобильной связи.
+
+        Parameters
+        ----------
+        account : str
+            Номер мобильного телефона
+        amount : float
+            Сумма платежа
+
+        Returns
+        -------
+        :class:`Payment <pyqiwi.types.Payment>`
+            Платеж
+
+        Raises
+        ------
+        ValueError
+            В случае, если не удалось определить провайдера.
+        """
+        pid = detect_mobile(account)
+        if pid:
+            return self.send(pid, account, amount)
+        else:
+            raise ValueError("Не удалось определить провайдера!")
+
 
 def get_commission(token, pid):
     """
