@@ -880,7 +880,7 @@ class Identity(JsonDeserializable):
     """
 
     @classmethod
-    def de_json(cls, json_type, base_inn):
+    def de_json(cls, json_type):
         obj = cls.check_json(json_type)
         _id = obj.get('id')
         _type = obj.get('type')
@@ -892,7 +892,8 @@ class Identity(JsonDeserializable):
         inn = obj.get('inn')
         snils = obj.get('snils')
         oms = obj.get('oms')
-        return cls(_id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms, base_inn)
+        return cls(_id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms,
+                   obj.get('base_inn'))
 
     def __init__(self, _id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms, base_inn):
         self.id = _id

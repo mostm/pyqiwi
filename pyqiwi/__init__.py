@@ -320,7 +320,8 @@ class Wallet:
         """
         result_json = apihelper.identification(self.token, self.number, birth_date, first_name, middle_name, last_name,
                                                passport, inn, snils, oms)
-        return types.Identity.de_json(result_json, inn)
+        result_json['base_inn'] = inn
+        return types.Identity.de_json(result_json)
 
 def get_commission(token, pid):
     """
