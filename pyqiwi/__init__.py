@@ -354,6 +354,29 @@ class Wallet:
             accounts.append(types.Account.de_json(account))
         return accounts
 
+    def cheque(self, txn_id, txn_type, file_format='PDF', email=None):
+        """
+        Получение чека по транзакции, на E-Mail или файл.
+
+        Parameters
+        ----------
+        txn_id : int
+            ID транзакции
+        txn_type : str
+            Тип указанной транзакции
+        file_format : str
+            Формат файла(игнорируется при использовании email)
+        email : str
+            E-Mail, куда отправить чек, если это необходимо.
+        Returns
+        -------
+        list[file]
+        """
+        if email:
+            return apihelper.cheque_send(self.token, txn_id, txn_type, email)
+        else:
+            return apihelper.cheque_file(self.token, txn_id, txn_type, file_format)
+
 
 def get_commission(token, pid):
     """

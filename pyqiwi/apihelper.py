@@ -199,3 +199,13 @@ def detect(phone):
         return result_json.get('message')
     else:
         return None
+
+
+def cheque_file(token, txn_id, _type, _format):
+    api_method = 'payment-history/v1/transactions/{0}/cheque/file'.format(txn_id)
+    return _make_request(token, api_method, params={"type": _type, "format": _format})
+
+
+def cheque_send(token, txn_id, _type, email):
+    api_method = 'payment-history/v1/transactions/{0}/cheque/send'.format(txn_id)
+    return _make_request(token, api_method, method='post', params={"type": _type}, json={"email": email})
