@@ -376,6 +376,25 @@ def get_commission(token, pid):
 
 
 def generate_form_link(pid, account, amount, comment):
+    """
+    Создание автозаполненной платежной формы
+
+    Parameters
+    ----------
+    pid : str
+        ID провайдера
+    account : str
+        Счет получателя
+    amount : float
+        Сумма платежа
+    comment : str
+        Комментарий
+
+    Returns
+    -------
+    str
+        Ссылка
+    """
     url = "https://qiwi.com/payment/form/{0}".format(pid)
     params = {"currency": 643}
     if type(amount) == float:
@@ -389,3 +408,20 @@ def generate_form_link(pid, account, amount, comment):
     if account:
         params['account'] = urlencode(account)
     return PreparedRequest().prepare_url(url, params).url
+
+
+def detect_mobile(phone):
+    """
+    Определение провайдера мобильного телефона
+
+    Parameters
+    ----------
+    phone : str
+        Номер телефона
+
+    Returns
+    -------
+    str
+        ID провайдера
+    """
+    return apihelper.detect(phone)
