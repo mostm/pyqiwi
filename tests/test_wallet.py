@@ -5,6 +5,7 @@ sys.path.append('../')
 
 import pytest
 import os
+import datetime
 
 import pyqiwi
 from pyqiwi import Wallet
@@ -25,15 +26,17 @@ class TestWallet:
     def test_check_balance(self):
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)
         assert isinstance(qiwi_wallet, Wallet)
-        assert type(qiwi_wallet.balance(currency=643)) == float
+        assert type(qiwi_wallet.balance()) == float
 
     def test_check_history(self):
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)
         assert isinstance(qiwi_wallet, Wallet)
         history = qiwi_wallet.history()
-        assert type(history) == list
-        for tnx in history:
+        assert type(history) == dict
+        for tnx in history['transactions']:
             assert type(tnx) == pyqiwi.types.Transaction
+        assert type(history['next_txn_date']) == datetime.datetime
+        assert type(history['next_txn_id']) == int
 
     def test_check_profile(self):
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)

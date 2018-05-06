@@ -11,7 +11,7 @@ from functools import partial
 from . import apihelper, types
 
 __title__ = 'pyQiwi'
-__version__ = "2.0.8"
+__version__ = "2.1"
 __author__ = "mostm"
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2017-2018 {0}'.format(__author__)
@@ -43,14 +43,16 @@ class Wallet:
     Attributes
     -----------
     accounts : iterable of :class:`Account <pyqiwi.types.Account>`
-        Все доступные методы оплаты для кошелька.
+        Все доступные счета на кошельке.
         Использовать можно только рублевый Visa QIWI Wallet.
     profile : :class:`Profile <pyqiwi.types.Profile>`
         Профиль пользователя.
     """
 
     def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
-        self.number = number
+        self.number = number.replace('+', '')
+        if self.number.startswith('8'):
+            self.number[0] = 7
         self.token = token
         self.auth_info_enabled = auth_info
         self.contract_info_enabled = contract_info
@@ -108,13 +110,14 @@ class Wallet:
                                                self.contract_info_enabled, self.user_info_enabled)
         return types.Profile.de_json(result_json)
 
-    def history(self, rows=20, operation=None, start_date=None, end_date=None, sources=None):
+    def history(self, rows=20, operation=None, start_date=None, end_date=None, sources=None, next_txn_date=None,
+                next_txn_id=None):
         """
         История платежей
 
         Warning
         -------
-        Максимальная интенсивность запросов истории платежей - не более 100 запросов в минуту с одного IP-адреса.
+        Максимальная интенсивность запросов истории платежей - не более 100 запросов в минуту для одного и того же номера кошелька.
         При превышении доступ к API блокируется на 5 минут.
 
         Parameters
@@ -134,23 +137,36 @@ class Wallet:
             Источники платежа, для отбора.
             Варианты: QW_RUB, QW_USD, QW_EUR, CARD, MK.
             По умолчанию - все указанные.
+        next_txn_date : Optional[datetime.datetime]
+            Дата транзакции для отсчета от предыдущего списка (равна параметру nextTxnDate в предыдущем списке).
+        next_txn_id : Optional[int]
+            Номер предшествующей транзакции для отсчета от предыдущего списка
+            (равен параметру nextTxnId в предыдущем списке).
 
         Note
         ----
-        Если вы хотите использовать startDate или endDate, вы должны указать оба параметра.
-        Максимальный допустимый интервал между startDate и endDate - 90 календарных дней.
+        Если вы хотите использовать start_date или end_date, вы должны указать оба параметра.
+        Такое же использование и у next_txn_date и next_txn_id.
+        Максимальный допустимый интервал между start_date и end_date - 90 календарных дней.
 
         Returns
         -------
-        list[:class:`Transaction <pyqiwi.types.Transaction>`]
-            Транзакции
+        dict
+            Состоит из:
+            transactions[list[:class:`Transaction <pyqiwi.types.Transaction>`]] - Транзакции.
+            next_txn_date[datetime.datetime] - Дата транзакции(для использования в следующем использовании).
+            next_txn_id[int] - Номер транзакции.
         """
         result_json = apihelper.payment_history(self.token, self.number, rows, operation=operation,
-                                                start_date=start_date, end_date=end_date, sources=sources)
+                                                start_date=start_date, end_date=end_date, sources=sources,
+                                                next_txn_date=next_txn_date, next_txn_id=next_txn_id)
         transactions = []
         for transaction in result_json['data']:
             transactions.append(types.Transaction.de_json(transaction))
-        return transactions
+        ntd = types.JsonDeserializable.decode_date(result_json.get("nextTxnDate"))
+        return {"transactions": transactions,
+                "next_txn_date": ntd,
+                "next_txn_id": result_json.get('nextTxnId')}
 
     def transaction(self, txn_id, txn_type):
         """
@@ -302,8 +318,7 @@ class Wallet:
             Текущая идентификация пользователя.
             Параметр внутри отвечающий за подтверждение успешной идентификации: Identity.check
         """
-        wallet = self.number.replace('+', '')
-        result_json = apihelper.identification(self.token, wallet, birth_date, first_name, middle_name, last_name,
+        result_json = apihelper.identification(self.token, self.number, birth_date, first_name, middle_name, last_name,
                                                passport, inn, snils, oms)
         return types.Identity.de_json(result_json, inn)
 

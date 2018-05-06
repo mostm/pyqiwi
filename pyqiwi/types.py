@@ -93,8 +93,6 @@ class Account(JsonDeserializable):
         (не привязанная карта, не счет мобильного телефона и т.д.)
     currency : int
         Код валюты баланса (number-3 ISO-4217). 
-        Возвращаются балансы в следующих валютах: 
-        643 - российский рубль, 840 - американский доллар, 978 - евро
     type : :class:`AccountType <pyqiwi.types.AccountType>`
         Сведения о счете
     balance : Optional[float]
@@ -105,14 +103,16 @@ class Account(JsonDeserializable):
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
         balance = None
+        _type = None
         alias = obj['alias']
-        fs_alias = obj['fsAlias']
-        title = obj['title']
-        has_balance = obj['hasBalance']
+        fs_alias = obj.get('fsAlias')
+        title = obj.get('title')
+        has_balance = obj.get('hasBalance')
         if has_balance:
-            balance = obj['balance']
+            balance = obj.get('balance')
         currency = obj['currency']
-        _type = AccountType.de_json(obj['type'])
+        if obj.get('type'):
+            _type = AccountType.de_json(obj['type'])
         return cls(alias, fs_alias, title, has_balance, currency, _type, balance)
 
     def __init__(self, alias, fs_alias, title, has_balance, currency, _type, balance):
@@ -493,20 +493,10 @@ class Transaction(JsonDeserializable):
         Курс конвертации (если применяется в транзакции)
     source : ???
         ???
-    extras : ???
-        Служебная информация
-    cheque_ready : bool
-        Специальное поле
-    bank_document_available : bool
-        Специальное поле
-    bank_document_ready : bool
-        Специальное поле
-    repeat_payment_enabled : bool
-        Специальное поле
-    favorite_payment_enabled : bool
-        Специальное поле
-    regular_payment_enabled : bool
-        Специальное поле
+    features : ???
+        ???
+    view : ???
+        ???
     """
 
     @classmethod
@@ -532,22 +522,15 @@ class Transaction(JsonDeserializable):
         source = obj['source']
         comment = obj['comment']
         currency_rate = obj['currencyRate']
-        extras = obj['extras']
-        cheque_ready = obj['chequeReady']
-        bank_document_available = obj['bankDocumentAvailable']
-        bank_document_ready = obj['bankDocumentReady']
-        repeat_payment_enabled = obj['repeatPaymentEnabled']
-        favorite_payment_enabled = obj['favoritePaymentEnabled']
-        regular_payment_enabled = obj['regularPaymentEnabled']
+        features = obj['features']
+        view = obj['view']
         return cls(txn_id, person_id, date, error_code, error,
                    status, _type, status_text, trm_txn_id, account, _sum, commission, total,
-                   provider, source, comment, currency_rate, extras, cheque_ready, bank_document_available,
-                   bank_document_ready, repeat_payment_enabled, favorite_payment_enabled, regular_payment_enabled)
+                   provider, source, comment, currency_rate, features, view)
 
     def __init__(self, txn_id, person_id, date, error_code, error,
                  status, _type, status_text, trm_txn_id, account, _sum, commission, total,
-                 provider, source, comment, currency_rate, extras, cheque_ready, bank_document_available,
-                 bank_document_ready, repeat_payment_enabled, favorite_payment_enabled, regular_payment_enabled):
+                 provider, source, comment, currency_rate, features, view):
         self.txn_id = txn_id
         self.person_id = person_id
         self.date = date
@@ -565,13 +548,8 @@ class Transaction(JsonDeserializable):
         self.source = source
         self.comment = comment
         self.currency_rate = currency_rate
-        self.extras = extras
-        self.cheque_ready = cheque_ready
-        self.bank_document_available = bank_document_available
-        self.bank_document_ready = bank_document_ready
-        self.repeat_payment_enabled = repeat_payment_enabled
-        self.favorite_payment_enabled = favorite_payment_enabled
-        self.regular_payment_enabled = regular_payment_enabled
+        self.features = features
+        self.view = view
 
 
 class TransactionSum(JsonDeserializable):

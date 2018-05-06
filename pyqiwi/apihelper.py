@@ -5,6 +5,7 @@ from sys import stderr
 
 import requests
 
+# noinspection PyCompatibility
 from . import exceptions, util
 
 logger = logging.getLogger(__name__)
@@ -52,16 +53,19 @@ def _check_result(method_name, result):
         description = exceptions.find_exception_desc(result.status_code, method_name)
         msg = 'Error code: {0} Description: {1}'.format(result.status_code, description)
         raise exceptions.APIError(msg, method_name, response=result)
-    if result.status_code != 200:
+    if result.status_code != 200 and result.status_code != 201:
         msg = 'The server returned HTTP {0} {1}. Response body:\n[{2}]' \
             .format(result.status_code, result.reason, result.text.encode('utf8'))
         raise exceptions.APIError(msg, method_name, response=result)
     try:
         result_json = result.json()
     except Exception:
-        msg = 'The server returned an invalid JSON response. Response body:\n[{0}]' \
-            .format(result.text.encode('utf8'))
-        raise exceptions.APIError(msg, method_name, response=result)
+        if result.status_code == 201:
+            return True
+        else:
+            msg = 'The server returned an invalid JSON response. Response body:\n[{0}]' \
+                .format(result.text.encode('utf8'))
+            raise exceptions.APIError(msg, method_name, response=result)
     return result_json
 
 
@@ -79,8 +83,9 @@ def funding_sources(token):
     return _make_request(token, api_method)
 
 
-def payment_history(token, number, rows, operation=None, start_date=None, end_date=None, sources=None):
-    api_method = "payment-history/v1/persons/{0}/payments".format(number)
+def payment_history(token, number, rows, operation=None, start_date=None, end_date=None, sources=None,
+                    next_txn_date=None, next_txn_id=None):
+    api_method = "payment-history/v2/persons/{0}/payments".format(number)
     params = {'rows': rows}
     if operation:
         params['operation'] = operation
@@ -88,11 +93,14 @@ def payment_history(token, number, rows, operation=None, start_date=None, end_da
         params = util.sources_list(sources, params)
     if start_date and end_date:
         params = util.stat_dates(start_date, end_date, params)
+    if next_txn_id and next_txn_date:
+        params['nextTxnId'] = next_txn_id
+        params['nextTxnDate'] = util.qiwi_date(next_txn_date)
     return _make_request(token, api_method, params=params)
 
 
 def total_payment_history(token, number, start_date, end_date, operation=None, sources=None):
-    api_method = "payment-history/v1/persons/{0}/payments/total".format(number)
+    api_method = "payment-history/v2/persons/{0}/payments/total".format(number)
     params = {}
     if operation:
         params['operation'] = operation
@@ -140,7 +148,7 @@ def local_commission(token, pid):
 
 
 def get_transaction(token, txn_id, txn_type):
-    api_method = 'payment-history/v1/transactions/{0}?type={1}'.format(txn_id, txn_type)
+    api_method = 'payment-history/v2/transactions/{0}?type={1}'.format(txn_id, txn_type)
     return _make_request(token, api_method)
 
 
