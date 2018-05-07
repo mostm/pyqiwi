@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # pyqiwi documentation build configuration file, created by
@@ -20,6 +20,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
 
 import pyqiwi
@@ -32,7 +33,7 @@ import pyqiwi
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx.ext.extlinks', 'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -47,8 +48,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = pyqiwi.__title__ 
-copyright = pyqiwi.__copyright__ 
+project = pyqiwi.__title__
+copyright = pyqiwi.__copyright__
 author = pyqiwi.__author__
 
 # The version info for the project you're documenting, acts as replacement
@@ -78,7 +79,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
-
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -97,12 +97,10 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'pyqiwidoc'
-
 
 # -- Options for LaTeX output ------------------------------------------
 
@@ -133,7 +131,6 @@ latex_documents = [
      u'Levent Duivel', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------
 
 # One entry per manual page. List of tuples
@@ -143,7 +140,6 @@ man_pages = [
      u'pyQiwi Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------
 
@@ -158,6 +154,3 @@ texinfo_documents = [
      'Python Qiwi API Wrapper',
      'Library'),
 ]
-
-
-
