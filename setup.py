@@ -8,8 +8,12 @@ from pyqiwi.__version__ import __version__
 with open('README.rst', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst', encoding='utf-8') as history_file:
-    history = history_file.read()
+try:
+    with open('HISTORY.rst', encoding='utf-8') as history_file:
+        history = history_file.read()
+except FileNotFoundError:
+    # thats fine, we are building on Travis
+    history = ''
 
 requirements = ['six', 'requests>=2.15,<3', 'parse>=1.8,<2']
 
