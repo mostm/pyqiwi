@@ -1,9 +1,10 @@
-Welcome to qiwipy's documentation!
+Добро пожаловать в документацию по pyQiwi!
 ======================================
+
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Контент:
 
    readme
    installation
@@ -13,8 +14,8 @@ Welcome to qiwipy's documentation!
    authors
    history
 
-Indices and tables
-==================
+Индекс
+======
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

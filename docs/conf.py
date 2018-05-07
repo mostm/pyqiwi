@@ -47,9 +47,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'qiwipy'
-copyright = u"2018, Levent Duivel"
-author = u"Levent Duivel"
+project = pyqiwi.__title__ 
+copyright = pyqiwi.__copyright__ 
+author = pyqiwi.__author__
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -84,7 +84,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
@@ -129,7 +129,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'pyqiwi.tex',
-     u'qiwipy Documentation',
+     u'pyQiwi Documentation',
      u'Levent Duivel', 'manual'),
 ]
 
@@ -140,7 +140,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'pyqiwi',
-     u'qiwipy Documentation',
+     u'pyQiwi Documentation',
      [author], 1)
 ]
 
@@ -152,11 +152,11 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pyqiwi',
-     u'qiwipy Documentation',
+     u'pyQiwi Documentation',
      author,
-     'pyqiwi',
-     'One line description of project.',
-     'Miscellaneous'),
+     'pyQiwi',
+     'Python Qiwi API Wrapper',
+     'Library'),
 ]
 
 
