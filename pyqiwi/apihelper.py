@@ -195,7 +195,7 @@ def identification(token, wallet, birth_date, first_name, middle_name, last_name
 def detect(phone):
     result_json = requests.post('https://qiwi.com/mobile/detect.action', data={"phone": phone})
     result_json = result_json.json()
-    if result_json.get('code', {}).get('value') == 0:
+    if result_json.get('code', {}).get('value') == '0':
         return result_json.get('message')
     else:
         return None
