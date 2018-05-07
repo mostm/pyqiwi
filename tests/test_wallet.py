@@ -60,10 +60,10 @@ class TestWallet:
     def test_get_commission(self):
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)
         assert isinstance(qiwi_wallet, Wallet)
-        com = qiwi_wallet.get_commission('26476')
-        assert type(com) == pyqiwi.types.Commission
-        for com_range in com:
-            assert type(com_range) == pyqiwi.types.CommissionRange    
+        commission = qiwi_wallet.get_commission('26476')
+        assert type(commission) == pyqiwi.types.Commission
+        for commission_range in commission.ranges:
+            assert type(commission_range) == pyqiwi.types.CommissionRange    
 
     def test_online_commission(self):
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)
@@ -71,7 +71,7 @@ class TestWallet:
         commission = qiwi_wallet.get_commission('26476')
         assert type(commission) == pyqiwi.types.Commission
         saved_range = None
-        for commission_range in commission:
+        for commission_range in commission.ranges:
             assert type(commission_range) == pyqiwi.types.CommissionRange
             if commission_range.rate != 1.0 or commission_range.rate != 1:
                 saved_range = commission_range
