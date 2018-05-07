@@ -1,4 +1,4 @@
-six
+six==1.11.0
 requests>=2.15,<3
 pytest>=3.5,<4
 parse>=1.8,<2
