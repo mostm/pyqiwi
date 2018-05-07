@@ -1,9 +1,13 @@
 .. include:: global.rst
 .. currentmodule:: pyqiwi
 
-Wallet
+===
+API
+===
+
+pyqiwi
 ------
-.. autoclass:: pyqiwi.Wallet
+.. automodule:: pyqiwi
     :members:
 
 Types
