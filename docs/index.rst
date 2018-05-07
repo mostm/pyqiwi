@@ -13,6 +13,7 @@
    contributing
    authors
    history
+   api
 
 Индекс
 ======
