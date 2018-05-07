@@ -3,8 +3,8 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = pyQiwi
+SPHINXBUILD   = python -msphinx
+SPHINXPROJ    = pyqiwi
 SOURCEDIR     = .
 BUILDDIR      = _build
 

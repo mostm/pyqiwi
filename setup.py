@@ -8,7 +8,7 @@ lib_filename = 'pyqiwi'
 version = __version__
 
 desc = 'Python Qiwi API Wrapper'
-long_desc = open('README.md', 'r', encoding='utf-8').read()
+long_desc = open('README.rst', 'r', encoding='utf-8').read()
 github = 'https://github.com/mostm/pyqiwi'
 author = 'mostm'
 author_email = 'mostm@endcape.ru'
