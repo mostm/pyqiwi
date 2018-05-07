@@ -1,40 +1,47 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from setuptools import setup
 
-from pyqiwi import __version__
 
-name = 'qiwipy'
-lib_filename = 'pyqiwi'
-version = __version__
+from setuptools import setup, find_packages
+from pyqiwi.__version__ import __version__
 
-desc = 'Python Qiwi API Wrapper'
-long_desc = open('README.rst', 'r', encoding='utf-8').read()
-github = 'https://github.com/mostm/pyqiwi'
-author = 'mostm'
-author_email = 'mostm@endcape.ru'
-license_type = 'MIT'
-classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-]
-keywords = 'qiwi python api wrapper lib'
-install_requires = ['requests>=2.18.4,<3', 'parse==1.8.2']
+with open('README.rst', encoding='utf-8') as readme_file:
+    readme = readme_file.read()
 
+with open('HISTORY.rst', encoding='utf-8') as history_file:
+    history = history_file.read()
+
+requirements = ['six', 'requests>=2.15,<3', 'parse>=1.8,<2']
+
+setup_requirements = ['pytest-runner', 'six', 'requests>=2.15,<3', 'parse>=1.8,<2']
+
+test_requirements = ['pytest', 'six', 'requests>=2.15,<3', 'parse>=1.8,<2']
 
 setup(
-    name=name,
-    version=version,
-    description=desc,
-    long_description=long_desc,
-    url=github,
-    license=license_type,
-    author=author,
-    author_email=author_email,
-    classifiers=classifiers,
-    keywords=keywords,
-    install_requires=install_requires,
-    packages=[lib_filename]
+    author="Levent Duivel",
+    author_email='mostm@endcape.ru',
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+    ],
+    description="Python Qiwi API Wrapper",
+    install_requires=requirements,
+    license="MIT",
+    long_description=readme + '\n\n' + history,
+    include_package_data=True,
+    keywords='pyqiwi',
+    name='qiwipy',
+    packages=find_packages(include=['pyqiwi']),
+    setup_requires=setup_requirements,
+    test_suite='tests',
+    tests_require=test_requirements,
+    url='https://github.com/mostm/pyqiwi',
+    version=__version__,
+    zip_safe=False,
 )

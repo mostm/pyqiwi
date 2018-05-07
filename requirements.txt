@@ -1,4 +1,4 @@
 six
 requests>=2.15,<3
-pytest==3.5.1
-parse==1.8.2
+pytest>=3.5,<4
+parse>=1.8,<2

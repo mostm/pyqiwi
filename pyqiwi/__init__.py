@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Python Qiwi API Wrapper 2.0
+Python Qiwi API Wrapper 2.1
 by mostm
 
 See pyQiwi Documentation: pyqiwi.readthedocs.io
@@ -11,13 +11,6 @@ from functools import partial
 from requests.models import PreparedRequest
 
 from . import apihelper, types
-
-__title__ = 'pyQiwi'
-__version__ = "2.1"
-__author__ = "mostm"
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2017-2018 {0}'.format(__author__)
-version_info = tuple(map(int, __version__.split('.')))
 
 
 class Wallet:
