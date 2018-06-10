@@ -11,6 +11,6 @@ twine==1.10.0
 pytest==3.4.2
 pytest-runner==2.11.1
 
-six
+six==1.11.0
 requests>=2.15,<3
 parse>=1.8,<2
