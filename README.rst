@@ -16,12 +16,6 @@ pyQiwi
         :alt: Статус документации
 
 
-.. image:: https://pyup.io/repos/github/mostm/pyqiwi/shield.svg
-     :target: https://pyup.io/repos/github/mostm/pyqiwi/
-     :alt: Обновления
-
-
-
 Python Qiwi API Wrapper
 
 
