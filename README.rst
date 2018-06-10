@@ -12,7 +12,7 @@ pyQiwi
         :alt: Статус сборки
 
 .. image:: https://readthedocs.org/projects/pyqiwi/badge/?version=latest
-        :target: https://pyqiwi.readthedocs.io/en/latest/?badge=latest
+        :target: https://pyqiwi.readthedocs.io/ru/latest/?badge=latest
         :alt: Статус документации
 
 
