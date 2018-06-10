@@ -23,11 +23,6 @@ class TestWallet:
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)
         assert isinstance(qiwi_wallet, Wallet)
 
-    def test_check_balance(self):
-        qiwi_wallet = Wallet(TOKEN, number=NUMBER)
-        assert isinstance(qiwi_wallet, Wallet)
-        assert type(qiwi_wallet.balance()) == float
-
     def test_check_history(self):
         qiwi_wallet = Wallet(TOKEN, number=NUMBER)
         assert isinstance(qiwi_wallet, Wallet)
