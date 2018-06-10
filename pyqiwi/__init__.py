@@ -161,7 +161,7 @@ class Wallet:
         transactions = []
         for transaction in result_json['data']:
             transactions.append(types.Transaction.de_json(transaction))
-        ntd = types.JsonDeserializable.decode_date(result_json.get("nextTxnDate"))
+        ntd = types.JsonDeserializable.decode_date(result_json.get("nextTxnDate")) if result_json.get("nextTxnDate") != None else None
         return {"transactions": transactions,
                 "next_txn_date": ntd,
                 "next_txn_id": result_json.get('nextTxnId')}
@@ -271,7 +271,7 @@ class Wallet:
             Ручное добавление dict'а в платежи.
             Требуется для специфичных платежей.
             Например, перевод на счет в банке.
-        
+
         Returns
         -------
         :class:`Payment <pyqiwi.types.Payment>`
@@ -428,7 +428,7 @@ def get_commission(token, pid):
         `Ключ Qiwi API`_
     pid : str
         Идентификатор провайдера.
-    
+
     Returns
     -------
     :class:`Commission <pyqiwi.types.Commission>`
