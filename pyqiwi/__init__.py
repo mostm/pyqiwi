@@ -47,9 +47,10 @@ class Wallet:
     """
 
     def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
-        self.number = number.replace('+', '')
-        if self.number.startswith('8'):
-            self.number = '7' + self.number[1:]
+        if isinstance(self.number, str):
+            self.number = number.replace('+', '')
+            if self.number.startswith('8'):
+                self.number = '7' + self.number[1:]
         self.token = token
         self.auth_info_enabled = auth_info
         self.contract_info_enabled = contract_info
