@@ -1,3 +1,4 @@
 six
 requests>=2.15,<3
 parse>=1.8,<2
+python-dateutil>=2.7,<3

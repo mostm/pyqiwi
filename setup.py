@@ -15,11 +15,11 @@ except FileNotFoundError:
     # thats fine, we are building on Travis
     history = ''
 
-requirements = ['six', 'requests>=2.15,<3', 'parse>=1.8,<2']
+requirements = ['six', 'requests>=2.15,<3', 'parse>=1.8,<2', 'python-dateutil>=2.7,<3']
 
-setup_requirements = ['pytest-runner', 'six', 'requests>=2.15,<3', 'parse>=1.8,<2']
+setup_requirements = ['pytest-runner', 'six', 'requests>=2.15,<3', 'parse>=1.8,<2', 'python-dateutil>=2.7,<3']
 
-test_requirements = ['pytest', 'six', 'requests>=2.15,<3', 'parse>=1.8,<2']
+test_requirements = ['pytest', 'six', 'requests>=2.15,<3', 'parse>=1.8,<2', 'python-dateutil>=2.7,<3']
 
 setup(
     author="Levent Duivel",

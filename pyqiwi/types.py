@@ -2,7 +2,7 @@
 import datetime
 import json
 
-import parse
+import dateutil.parser
 import six
 
 
@@ -42,26 +42,14 @@ class JsonDeserializable:
     @staticmethod
     def decode_date(date_string: str):
         """
-        Декодирует дату из строки вида отправляемого Qiwi API: %Y-%m-%dT%H:%M:%SZ
+        Декодирует дату из строки вида отправляемого Qiwi API ISO-8601
 
         Returns
         -------
         datetime.datetime данной строки 
         """
         if isinstance(date_string, str):
-            # QIWI, BRING MORE CHANGES TO DATE STRING FORMAT, SO EVERYTHING WONT WORK AGAIN.
-            dt = parse.parse('{YEAR}-{MONTH}-{DATE}T{HOUR}:{MINUTE}:{SECOND}+{TIMEZONE}', date_string)
-            dt = dt.named
-            if '.' in dt['SECOND']:
-                dt_secs = parse.parse('{SECOND}.{MILLISECOND}', dt['SECOND'])
-                dt['SECOND'] = dt_secs.named['SECOND']
-                dt['MILLISECOND'] = dt_secs.named['MILLISECOND']
-            else:
-                dt['MILLISECOND'] = '00'
-            dt['TIMEZONE'] = dt['TIMEZONE'].replace(':', '')
-            return datetime.datetime.strptime(
-                '{YEAR}-{MONTH}-{DATE}T{HOUR}:{MINUTE}:{SECOND}.{MILLISECOND}+{TIMEZONE}'.format(**dt),
-                '%Y-%m-%dT%H:%M:%S.%f%z')
+            return dateutil.parser.parse(date_string)
         else:
             raise TypeError('types.JsonDeserializable.decode_date only accepts date_string as str type')
 
