@@ -161,7 +161,9 @@ class Wallet:
         transactions = []
         for transaction in result_json['data']:
             transactions.append(types.Transaction.de_json(transaction))
-        ntd = types.JsonDeserializable.decode_date(result_json.get("nextTxnDate")) if result_json.get("nextTxnDate") != None else None
+        ntd = None
+        if result_json.get("nextTxnDate") is not None:
+            ntd = types.JsonDeserializable.decode_date(result_json.get("nextTxnDate"))
         return {"transactions": transactions,
                 "next_txn_date": ntd,
                 "next_txn_id": result_json.get('nextTxnId')}

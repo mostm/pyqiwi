@@ -30,6 +30,7 @@ def sources_list(sources, params):
 def qiwi_date(date: datetime.datetime):
     return date.strftime("%Y-%m-%dT%H:%M:%S+03:00")
 
+
 def stat_dates(start_date, end_date, params):
     if isinstance(start_date, datetime.datetime) and isinstance(end_date, datetime.datetime):
         params['startDate'] = qiwi_date(start_date)
