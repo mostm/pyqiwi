@@ -9,6 +9,8 @@ import datetime
 
 import pyqiwi
 from pyqiwi import Wallet
+from pyqiwi.util import url_params, merge_dicts, split_float
+from urllib.parse import unquote
 
 should_skip = 'TOKEN' and 'NUMBER' not in os.environ
 
@@ -74,3 +76,22 @@ class TestWallet:
                 saved_range = commission_range
         online_commission = qiwi_wallet.commission('26476', qiwi_wallet.number, 100)
         assert online_commission.qw_commission.amount == 100 * saved_range.rate
+
+    def test_form_link(self):
+        data = {
+            'pid': 1,
+            'account': 79000000000,
+            'amount': 123,
+            'comment': 'Hey, it works!'
+        }
+        paylink = pyqiwi.generate_form_link(**data)
+        result = url_params(unquote(paylink))
+        data.pop('pid') # It is not on params, it's in URL
+        # Qiwi requires for amount to be split into integer and fraction
+        data = merge_dicts(data, split_float(data.get('amount')))
+        data.pop('amount')
+        # unquote won't process + to <Space>, but Qiwi should
+        if result.get('comment'):
+            result['comment'] = result['comment'].replace('+', ' ')
+        for key in data:
+            assert result[key] == str(data[key])
