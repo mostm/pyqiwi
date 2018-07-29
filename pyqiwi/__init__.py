@@ -8,10 +8,9 @@ See pyQiwi Documentation: pyqiwi.readthedocs.io
 import datetime
 from functools import partial
 
-from requests.models import PreparedRequest
+from urllib.parse import urlencode
 
-from . import apihelper, types
-
+from . import apihelper, types, util
 
 class Wallet:
     """
@@ -463,17 +462,15 @@ def generate_form_link(pid, account, amount, comment):
     """
     url = "https://qiwi.com/payment/form/{0}".format(pid)
     params = {"currency": 643}
-    if type(amount) == float:
-        params['amountInteger'] = str(amount).split('.')[0]
-        params['amountFraction'] = str(amount).split('.')[1]
-    else:
-        params['amountInteger'] = amount
-    from urllib.parse import urlencode
+    params = util.merge_dicts(params, util.split_float(amount))
     if comment:
-        params['comment'] = urlencode(comment)
+        params['comment'] = comment
     if account:
-        params['account'] = urlencode(account)
-    return PreparedRequest().prepare_url(url, params).url
+        params['account'] = account
+
+    encoded_params = urlencode(params)
+    
+    return url + '?' + encoded_params
 
 
 def detect_mobile(phone):

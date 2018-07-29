@@ -49,3 +49,17 @@ def url_params(url):
         except IndexError:
             params[param.split('=')[0]] = None
     return params
+
+def split_float(amount: float):
+    params = {}
+    if type(amount) == float:
+        params['amountInteger'] = str(amount).split('.')[0]
+        params['amountFraction'] = str(amount).split('.')[1]
+    else:
+        params['amountInteger'] = amount
+    return params
+
+def merge_dicts(x, y):
+    z = x.copy()
+    z.update(y)
+    return z
