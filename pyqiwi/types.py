@@ -10,7 +10,14 @@ class JsonDeserializable:
     """
     Субклассы этого класса гарантированно могут быть созданы из json-подобного dict'а или форматированной json строки
     Все субклассы этого класса должны перезаписывать de_json
+
+    Attributes
+    ----------
+    raw : ???
+        Содержит в себе исходные данные от Qiwi API
     """
+
+    raw = None
 
     @classmethod
     def de_json(cls, json_type):
@@ -20,7 +27,7 @@ class JsonDeserializable:
 
         Returns
         -------
-        Инстанс этого класса из созданного json dict'а или строки 
+        Инстанс этого класса из созданного json dict'а или строки
         """
         raise NotImplementedError
 
@@ -46,7 +53,7 @@ class JsonDeserializable:
 
         Returns
         -------
-        datetime.datetime данной строки 
+        datetime.datetime данной строки
         """
         if isinstance(date_string, str):
             return dateutil.parser.parse(date_string)
@@ -77,10 +84,10 @@ class Account(JsonDeserializable):
     title : str
         Название соответствующего счета кошелька
     has_balance : str
-        Логический признак реального баланса в системе QIWI Кошелек 
+        Логический признак реального баланса в системе QIWI Кошелек
         (не привязанная карта, не счет мобильного телефона и т.д.)
     currency : int
-        Код валюты баланса (number-3 ISO-4217). 
+        Код валюты баланса (number-3 ISO-4217).
     type : :class:`AccountType <pyqiwi.types.AccountType>`
         Сведения о счете
     balance : Optional[float]
@@ -101,9 +108,10 @@ class Account(JsonDeserializable):
         currency = obj['currency']
         if obj.get('type'):
             _type = AccountType.de_json(obj['type'])
-        return cls(alias, fs_alias, title, has_balance, currency, _type, balance)
+        return cls(alias, fs_alias, title, has_balance, currency, _type, balance, obj)
 
-    def __init__(self, alias, fs_alias, title, has_balance, currency, _type, balance):
+    def __init__(self, alias, fs_alias, title, has_balance, currency, _type, balance, obj):
+        self.raw = obj
         self.alias = alias
         self.fs_alias = fs_alias
         self.title = title
@@ -116,7 +124,7 @@ class Account(JsonDeserializable):
 class AccountType(JsonDeserializable):
     """
     Сведения о счете из Visa QIWI Кошелька
-    
+
     Attributes
     ----------
     id : str
@@ -128,9 +136,10 @@ class AccountType(JsonDeserializable):
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
-        return cls(obj['id'], obj['title'])
+        return cls(obj['id'], obj['title'], obj)
 
-    def __init__(self, _id, title):
+    def __init__(self, _id, title, obj):
+        self.raw = obj
         self.id = _id
         self.title = title
 
@@ -155,9 +164,10 @@ class Profile(JsonDeserializable):
         auth_info = AuthInfo.de_json(obj['authInfo'])
         contract_info = ContractInfo.de_json(obj['contractInfo'])
         user_info = UserInfo.de_json(obj['userInfo'])
-        return cls(auth_info, contract_info, user_info)
+        return cls(auth_info, contract_info, user_info, obj)
 
-    def __init__(self, auth_info, contract_info, user_info):
+    def __init__(self, auth_info, contract_info, user_info, obj):
+        self.raw = obj
         self.auth_info = auth_info
         self.contract_info = contract_info
         self.user_info = user_info
@@ -185,7 +195,7 @@ class AuthInfo(JsonDeserializable):
     pin_info : :class:`PinInfo <pyqiwi.types.PinInfo>`
         Данные о PIN-коде к приложению QIWI Кошелька на QIWI терминалах
     registration_date : datetime.datetime
-        Дата/время регистрации QIWI Кошелька пользователя 
+        Дата/время регистрации QIWI Кошелька пользователя
         (через сайт либо мобильное приложение, либо другим способом)
     """
 
@@ -207,10 +217,11 @@ class AuthInfo(JsonDeserializable):
         else:
             registration_date = None
         return cls(bound_email, ip, last_login_date, mobile_pin_info,
-                   pass_info, person_id, pin_info, registration_date)
+                   pass_info, person_id, pin_info, registration_date, obj)
 
     def __init__(self, bound_email, ip, last_login_date, mobile_pin_info,
-                 pass_info, person_id, pin_info, registration_date):
+                 pass_info, person_id, pin_info, registration_date, obj):
+        self.raw = obj
         self.bound_email = bound_email
         self.ip = ip
         self.last_login_date = last_login_date
@@ -228,7 +239,7 @@ class MobilePinInfo(JsonDeserializable):
     Attributes
     ----------
     mobile_pin_used : bool
-        Логический признак использования PIN-кода 
+        Логический признак использования PIN-кода
         (фактически означает, что мобильное приложение используется)
     last_mobile_pin_change : datetime.datetime
         Дата/время последнего изменения PIN-кода мобильного приложения QIWI Кошелька
@@ -249,9 +260,10 @@ class MobilePinInfo(JsonDeserializable):
                 last_mobile_pin_change = cls.decode_date(obj['lastMobilePinChange'])
             if obj['nextMobilePinChange']:
                 next_mobile_pin_change = cls.decode_date(obj['nextMobilePinChange'])
-        return cls(mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change)
+        return cls(mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change, obj)
 
-    def __init__(self, mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change):
+    def __init__(self, mobile_pin_used, last_mobile_pin_change, next_mobile_pin_change, obj):
+        self.raw = obj
         self.mobile_pin_used = mobile_pin_used
         self.last_mobile_pin_change = last_mobile_pin_change
         self.next_mobile_pin_change = next_mobile_pin_change
@@ -268,7 +280,7 @@ class PassInfo(JsonDeserializable):
     next_pass_change : str
         Дата/время следующего (планового) изменения пароля сайта qiwi.com
     password_used : bool
-        Логический признак использования пароля 
+        Логический признак использования пароля
         (фактически означает, что пользователь заходит на сайт)
     """
 
@@ -285,9 +297,10 @@ class PassInfo(JsonDeserializable):
                 last_pass_change = cls.decode_date(obj['lastPassChange'])
             if obj['nextPassChange']:
                 next_pass_change = cls.decode_date(obj['nextPassChange'])
-        return cls(last_pass_change, next_pass_change, password_used)
+        return cls(last_pass_change, next_pass_change, password_used, obj)
 
-    def __init__(self, last_pass_change, next_pass_change, password_used):
+    def __init__(self, last_pass_change, next_pass_change, password_used, obj):
+        self.raw = obj
         self.last_pass_change = last_pass_change
         self.next_pass_change = next_pass_change
         self.password_used = password_used
@@ -308,9 +321,10 @@ class PinInfo(JsonDeserializable):
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
         pin_used = obj['pinUsed']
-        return cls(pin_used)
+        return cls(pin_used, obj)
 
-    def __init__(self, pin_used):
+    def __init__(self, pin_used, obj):
+        self.raw = obj
         self.pin_used = pin_used
 
 
@@ -346,9 +360,10 @@ class ContractInfo(JsonDeserializable):
         identification_info = []
         for _id in obj['identificationInfo']:
             identification_info.append(IdentificationInfo.de_json(_id))
-        return cls(blocked, contract_id, creation_date, features, identification_info)
+        return cls(blocked, contract_id, creation_date, features, identification_info, obj)
 
-    def __init__(self, blocked, contract_id, creation_date, features, identification_info):
+    def __init__(self, blocked, contract_id, creation_date, features, identification_info, obj):
+        self.raw = obj
         self.blocked = blocked
         self.contract_id = contract_id
         self.creation_date = creation_date
@@ -378,9 +393,10 @@ class IdentificationInfo(JsonDeserializable):
         obj = cls.check_json(json_type)
         bank_alias = obj['bankAlias']
         identification_level = obj['identificationLevel']
-        return cls(bank_alias, identification_level)
+        return cls(bank_alias, identification_level, obj)
 
-    def __init__(self, bank_alias, identification_level):
+    def __init__(self, bank_alias, identification_level, obj):
+        self.raw = obj
         self.bank_alias = bank_alias
         self.identification_level = identification_level
 
@@ -421,10 +437,11 @@ class UserInfo(JsonDeserializable):
         phone_hash = obj.get('phoneHash')
         promo_enabled = obj.get('promoEnabled')
         return cls(default_pay_currency, default_pay_source, email, first_txn_id,
-                   language, operator, phone_hash, promo_enabled)
+                   language, operator, phone_hash, promo_enabled, obj)
 
     def __init__(self, default_pay_currency, default_pay_source, email, first_txn_id,
-                 language, operator, phone_hash, promo_enabled):
+                 language, operator, phone_hash, promo_enabled, obj):
+        self.raw = obj
         self.default_pay_currency = default_pay_currency
         self.default_pay_source = default_pay_source
         self.email = email
@@ -446,20 +463,20 @@ class Transaction(JsonDeserializable):
     person_id : int
         Номер кошелька
     date : datetime.datetime
-        Дата/время платежа, время московское 
+        Дата/время платежа, время московское
     error_code : int/float
         Код ошибки платежа
     error : str
         Описание ошибки
     status : str
         Статус платежа. Возможные значения:
-        WAITING - платеж проводится, 
-        SUCCESS - успешный платеж, 
+        WAITING - платеж проводится,
+        SUCCESS - успешный платеж,
         ERROR - ошибка платежа.
     type : str
         Тип платежа. Возможные значения:
-        IN - пополнение, 
-        OUT - платеж, 
+        IN - пополнение,
+        OUT - платеж,
         QIWI_CARD - платеж с карт QIWI (QVC, QVP).
     status_text : str
         Текстовое описание статуса платежа
@@ -514,11 +531,12 @@ class Transaction(JsonDeserializable):
         view = obj['view']
         return cls(txn_id, person_id, date, error_code, error,
                    status, _type, status_text, trm_txn_id, account, _sum, commission, total,
-                   provider, source, comment, currency_rate, features, view)
+                   provider, source, comment, currency_rate, features, view, obj)
 
     def __init__(self, txn_id, person_id, date, error_code, error,
                  status, _type, status_text, trm_txn_id, account, _sum, commission, total,
-                 provider, source, comment, currency_rate, features, view):
+                 provider, source, comment, currency_rate, features, view, obj):
+        self.raw = obj
         self.txn_id = txn_id
         self.person_id = person_id
         self.date = date
@@ -557,9 +575,10 @@ class TransactionSum(JsonDeserializable):
         obj = cls.check_json(json_type)
         amount = obj['amount']
         currency = obj['currency']
-        return cls(amount, currency)
+        return cls(amount, currency, obj)
 
-    def __init__(self, amount, currency):
+    def __init__(self, amount, currency, obj):
+        self.raw = obj
         self.amount = amount
         self.currency = currency
 
@@ -596,9 +615,10 @@ class TransactionProvider(JsonDeserializable):
         description = obj['description']
         keys = obj['keys']
         site_url = obj['siteUrl']
-        return cls(_id, short_name, long_name, logo_url, description, keys, site_url)
+        return cls(_id, short_name, long_name, logo_url, description, keys, site_url, obj)
 
-    def __init__(self, _id, short_name, long_name, logo_url, description, keys, site_url):
+    def __init__(self, _id, short_name, long_name, logo_url, description, keys, site_url, obj):
+        self.raw = obj
         self.id = _id
         self.short_name = short_name
         self.long_name = long_name
@@ -629,9 +649,10 @@ class Statistics(JsonDeserializable):
         outgoing_total = []
         for currency in obj['outgoingTotal']:
             outgoing_total.append(TransactionSum.de_json(currency))
-        return cls(incoming_total, outgoing_total)
+        return cls(incoming_total, outgoing_total, obj)
 
-    def __init__(self, incoming_total, outgoing_total):
+    def __init__(self, incoming_total, outgoing_total, obj):
+        self.raw = obj
         self.incoming_total = incoming_total
         self.outgoing_total = outgoing_total
 
@@ -652,9 +673,10 @@ class Commission(JsonDeserializable):
         ranges = []
         for com_range in obj['content']['terms']['commission']['ranges']:
             ranges.append(CommissionRange.de_json(com_range))
-        return cls(ranges)
+        return cls(ranges, obj)
 
-    def __init__(self, ranges):
+    def __init__(self, ranges, obj):
+        self.raw = obj
         self.ranges = ranges
 
 
@@ -684,9 +706,10 @@ class CommissionRange(JsonDeserializable):
         rate = obj.get('rate')
         _min = obj.get('min')
         _max = obj.get('max')
-        return cls(bound, fixed, rate, _min, _max)
+        return cls(bound, fixed, rate, _min, _max, obj)
 
-    def __init__(self, bound, fixed, rate, _min, _max):
+    def __init__(self, bound, fixed, rate, _min, _max, obj):
+        self.raw = obj
         self.bound = bound
         self.fixed = fixed
         self.rate = rate
@@ -724,10 +747,11 @@ class OnlineCommission(JsonDeserializable):
         funding_source_commission = TransactionSum.de_json(obj['fundingSourceCommission'])
         withdraw_to_enrollment_rate = obj['withdrawToEnrollmentRate']
         return cls(provider_id, withdraw_sum, enrollment_sum,
-                   qw_commission, funding_source_commission, withdraw_to_enrollment_rate)
+                   qw_commission, funding_source_commission, withdraw_to_enrollment_rate, obj)
 
     def __init__(self, provider_id, withdraw_sum, enrollment_sum,
-                 qw_commission, funding_source_commission, withdraw_to_enrollment_rate):
+                 qw_commission, funding_source_commission, withdraw_to_enrollment_rate, obj):
+        self.raw = obj
         self.provider_id = provider_id
         self.withdraw_sum = withdraw_sum
         self.enrollment_sum = enrollment_sum
@@ -769,9 +793,10 @@ class Payment(JsonDeserializable):
         transaction = cls.Transaction.de_json(obj['transaction'])
         source = obj['source']
         comment = obj.get('comment')
-        return cls(_id, terms, fields, _sum, transaction, source, comment)
+        return cls(_id, terms, fields, _sum, transaction, source, comment, obj)
 
-    def __init__(self, _id, terms, fields, _sum, transaction, source, comment):
+    def __init__(self, _id, terms, fields, _sum, transaction, source, comment, obj):
+        self.raw = obj
         self.id = _id
         self.terms = terms
         self.fields = fields
@@ -797,9 +822,10 @@ class Payment(JsonDeserializable):
             obj = cls.check_json(json_type)
             _id = obj.get('id')
             state = obj.get('state').get('code')
-            return cls(_id, state)
+            return cls(_id, state, obj)
 
-        def __init__(self, _id, state):
+        def __init__(self, _id, state, obj):
+            self.raw = obj
             self.id = _id
             self.state = state
 
@@ -810,7 +836,7 @@ class PaymentFields(JsonDeserializable):
 
     Данный класс представляет из себя хаотичную структуру(но всегда присутствует "account")
     Судя по документации Qiwi API, создается из исходного поля fields для платежа
-    
+
     Note
     -----
     Если вы хотите посмотреть исходный вид выданный Qiwi API, используйте str(PaymentFields)
@@ -825,6 +851,7 @@ class PaymentFields(JsonDeserializable):
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
         fields = cls()
+        fields.raw = obj
         for key in obj:
             setattr(fields, key, obj[key])
         return fields
@@ -881,9 +908,11 @@ class Identity(JsonDeserializable):
         snils = obj.get('snils')
         oms = obj.get('oms')
         return cls(_id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms,
-                   obj.get('base_inn'))
+                   obj.get('base_inn'), obj)
 
-    def __init__(self, _id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms, base_inn):
+    def __init__(self, _id, _type, birth_date, first_name, middle_name, last_name, passport, inn, snils, oms, base_inn,
+                 obj):
+        self.raw = obj
         self.id = _id
         self.type = _type
         self.birth_date = birth_date
