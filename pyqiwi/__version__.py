@@ -9,6 +9,6 @@
 # Python Qiwi API Wrapper
 
 
-VERSION = (2, 1, 4)
+VERSION = (2, 1, 5)
 
 __version__ = '.'.join(map(str, VERSION))
