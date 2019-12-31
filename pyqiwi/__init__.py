@@ -45,15 +45,12 @@ class Wallet:
         Доступные счета для создания
     """
 
-    def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
-        if isinstance(number, str):
-            self.number = number.replace('+', '')
-            if self.number.startswith('8'):
-                self.number = '7' + self.number[1:]
+    def __init__(self, token, contract_info=True, auth_info=True, user_info=True):
         self.token = token
         self.auth_info_enabled = auth_info
         self.contract_info_enabled = contract_info
         self.user_info_enabled = user_info
+        self.number = self.profile.raw['contractInfo']['contractId']
         self.get_commission = partial(get_commission, self.token)
         self.headers = {'Accept': 'application/json',
                         'Content-Type': 'application/json',
