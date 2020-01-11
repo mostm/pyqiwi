@@ -466,7 +466,7 @@ def generate_form_link(pid, account, amount, comment):
     if comment:
         params['comment'] = comment
     if account:
-        params['account'] = account
+        params["extra['account']"] = account
 
     encoded_params = urlencode(params)
     
