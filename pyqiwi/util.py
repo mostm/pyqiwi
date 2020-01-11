@@ -56,7 +56,7 @@ def split_float(amount: float):
         params['amountInteger'] = str(amount).split('.')[0]
         params['amountFraction'] = str(amount).split('.')[1]
     else:
-        params['amountInteger'] = amount
+        params['amount'] = amount
     return params
 
 def merge_dicts(x, y):
