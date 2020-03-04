@@ -7,10 +7,10 @@ See pyQiwi Documentation: pyqiwi.readthedocs.io
 """
 import datetime
 from functools import partial
-
 from urllib.parse import urlencode
 
 from . import apihelper, types, util
+
 
 class Wallet:
     """
@@ -440,7 +440,7 @@ def get_commission(token, pid):
     return types.Commission.de_json(result_json)
 
 
-def generate_form_link(pid, account, amount, comment):
+def generate_form_link(pid, account, amount, comment, blocked=None, account_type=None):
     """
     Создание автозаполненной платежной формы
 
@@ -454,19 +454,50 @@ def generate_form_link(pid, account, amount, comment):
         Сумма платежа
     comment : str
         Комментарий
+    blocked : list[str]
+        Список из значений "заблокированных" (не изменяемых на веб-странице) полей внутри ссылки.
+        Варианты: sum, account, comment
+    account_type : int or str
+        Отвечает за вариант перевода при pid=99999 (вариация перевода на Qiwi Кошелек)
+        Варианты: 0 (перевод по номеру телефона, phone), 1 (перевод по "никнейму", nickname),
+         str (сами впишите вариант по соответствию с Qiwi API)
+
+    Note
+    ----
+    Комментарий применяется только при переводе на Qiwi Кошелек по номеру (pid==99)
+    Сумма платежа не может быть более 99999 из-за ограничений на один платеж.
+    Тип счета для перевода на Qiwi Кошелек (pid=99999) с возможностью ввода "nickname" выбирается в account_type
 
     Returns
     -------
     str
         Ссылка
+
+    Raises
+    ------
+    ValueError
+        amount>99999 или список blocked неверен
     """
     url = "https://qiwi.com/payment/form/{0}".format(pid)
     params = {"currency": 643}
     params = util.merge_dicts(params, util.split_float(amount))
-    if comment:
-        params['comment'] = comment
+    if amount > 99999:
+        raise ValueError('amount не может превышать 99999 из-за ограничений на один платеж внутри QIWI')
+    if pid == 99 and comment:
+        params["extra['comment']"] = comment
     if account:
         params["extra['account']"] = account
+    if type(blocked) == list and len(blocked) > 0:
+        for entry in blocked:
+            if entry not in ['sum', 'account', 'comment']:
+                raise ValueError('Заблокированное значение может быть только sum, account или comment')
+        params = util.sources_list(blocked, params, name='blocked')
+    if pid == 99999 and account_type == 0:
+        params["extra['accountType']"] = 'phone'
+    elif pid == 99999 and account_type == 1:
+        params["extra['accountType']"] = 'nickname'
+    elif pid == 99999 and type(account_type) == str:
+        params["extra['accountType']"] = account_type
 
     encoded_params = urlencode(params)
     

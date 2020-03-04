@@ -79,7 +79,7 @@ class TestWallet:
 
     def test_form_link(self):
         data = {
-            'pid': 1,
+            'pid': 99,
             'account': 79000000000,
             'amount': 123,
             'comment': 'Hey, it works!'
@@ -91,7 +91,10 @@ class TestWallet:
         data = merge_dicts(data, split_float(data.get('amount')))
         data.pop('amount')
         # unquote won't process + to <Space>, but Qiwi should
-        if result.get('comment'):
-            result['comment'] = result['comment'].replace('+', ' ')
+        if result.get("extra['comment']"):
+            result["extra['comment']"] = result["extra['comment']"].replace('+', ' ')
         for key in data:
-            assert result[key] == str(data[key])
+            if key == 'account':
+                assert result["extra['account']"] == str(data[key])
+            elif key == 'comment':
+                assert result["extra['comment']"] == str(data[key])

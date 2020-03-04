@@ -3,7 +3,7 @@ import datetime
 from urllib.parse import urlparse
 
 
-def sources_list(sources, params):
+def sources_list(sources, params, name='sources'):
     """
     Adds defined list of sources to params
 
@@ -13,6 +13,8 @@ def sources_list(sources, params):
         Payment sources
     params : dict
         Default params
+    name : str
+        name for list
 
     Returns
     -------
@@ -21,7 +23,7 @@ def sources_list(sources, params):
     """
     if isinstance(sources, list):
         for source in sources:
-            params['sources[{0}]'.format(sources.index(source))] = source
+            params['{0}[{1}]'.format(name, sources.index(source))] = source
     else:
         raise TypeError('You should use list Type for sources')
     return params
@@ -50,6 +52,7 @@ def url_params(url):
             params[param.split('=')[0]] = None
     return params
 
+
 def split_float(amount: float):
     params = {}
     if type(amount) == float:
@@ -58,6 +61,7 @@ def split_float(amount: float):
     else:
         params['amount'] = amount
     return params
+
 
 def merge_dicts(x, y):
     z = x.copy()
