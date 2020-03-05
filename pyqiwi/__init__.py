@@ -351,7 +351,8 @@ class Wallet:
             E-Mail, куда отправить чек, если это необходимо.
         Returns
         -------
-        list[file]
+        binary
+            ??? | Прямой возврат ответа от Qiwi API
         """
         if email:
             return apihelper.cheque_send(self.token, txn_id, txn_type, email)

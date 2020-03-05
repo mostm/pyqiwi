@@ -25,7 +25,7 @@ CONNECT_TIMEOUT = 3.5
 READ_TIMEOUT = 9999
 
 
-def _make_request(token, method_name, method='get', params=None, base_url=API_URL, json=None):
+def _make_request(token, method_name, method='get', params=None, base_url=API_URL, json=None, passthru=False):
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json',
                'Authorization': "Bearer {0}".format(token)}
@@ -45,10 +45,10 @@ def _make_request(token, method_name, method='get', params=None, base_url=API_UR
         method_name = method_name.split('/')[len(method_name.split('/')) - 1]
     else:
         method_name = method_name.split('/')[0]
-    return _check_result(method_name, result)
+    return _check_result(method_name, result, passthru)
 
 
-def _check_result(method_name, result):
+def _check_result(method_name, result, passthru):
     if result.text == '':
         description = exceptions.find_exception_desc(result.status_code, method_name)
         msg = 'Error code: {0} Description: {1}'.format(result.status_code, description)
@@ -58,7 +58,10 @@ def _check_result(method_name, result):
             .format(result.status_code, result.reason, result.text.encode('utf8'))
         raise exceptions.APIError(msg, method_name, response=result)
     try:
-        result_json = result.json()
+        if passthru:
+            return result
+        else:
+            result_json = result.json()
     except Exception:
         if result.status_code == 201:
             return True
@@ -203,7 +206,7 @@ def detect(phone):
 
 def cheque_file(token, txn_id, _type, _format):
     api_method = 'payment-history/v1/transactions/{0}/cheque/file'.format(txn_id)
-    return _make_request(token, api_method, params={"type": _type, "format": _format})
+    return _make_request(token, api_method, params={"type": _type, "format": _format}, passthru=True)
 
 
 def cheque_send(token, txn_id, _type, email):
