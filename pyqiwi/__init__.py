@@ -385,7 +385,7 @@ class Wallet:
         Parameters
         ----------
         account : str
-            Номер мобильного телефона
+            Номер мобильного телефона (с кодом страны, 7/8, без +)
         amount : float
             Сумма платежа
 
@@ -401,7 +401,7 @@ class Wallet:
         """
         pid = detect_mobile(account)
         if pid:
-            return self.send(pid, account, amount)
+            return self.send(pid, account[1:], amount)
         else:
             raise ValueError("Не удалось определить провайдера!")
 
