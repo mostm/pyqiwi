@@ -66,7 +66,7 @@ Python Qiwi API Wrapper
 
 .. code-block:: python
 
-    payment = wallet.send(id=99, recipient='79001234567', amount=1.11, comment='Привет!')
+    payment = wallet.send(pid=99, recipient='79001234567', amount=1.11, comment='Привет!')
     example = 'Payment is {0}\nRecipient: {1}\nPayment Sum: {2}'.format(
               payment.transaction['state']['code'], payment.fields['account'], payment.sum)
     print(example)
