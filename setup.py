@@ -5,7 +5,7 @@
 from setuptools import setup, find_packages
 from pyqiwi.__version__ import __version__
 
-with open('README.rst', encoding='utf-8') as readme_file:
+with open('README.txt', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
 try:
@@ -30,7 +30,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
@@ -38,6 +37,7 @@ setup(
     install_requires=requirements,
     license="MIT",
     long_description=readme + '\n\n' + history,
+    long_description_content_type="text",
     include_package_data=True,
     keywords='pyqiwi',
     name='qiwipy',
