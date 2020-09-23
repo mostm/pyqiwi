@@ -41,7 +41,7 @@ setup(
     install_requires=requirements,
     license="MIT",
     long_description=readme + '\n\n' + history,
-    long_description_content_type="text",
+    long_description_content_type="text/plain",
     include_package_data=True,
     keywords='pyqiwi',
     name='qiwipy',
