@@ -5,8 +5,12 @@
 from setuptools import setup, find_packages
 from pyqiwi.__version__ import __version__
 
-with open('README.txt', encoding='utf-8') as readme_file:
-    readme = readme_file.read()
+try:
+    with open('README.txt', encoding='utf-8') as readme_file:
+        readme = readme_file.read()
+except FileNotFoundError:
+    # I should investigate why this is a case.
+    readme = "Python QIWI API Wrapper"
 
 try:
     with open('HISTORY.rst', encoding='utf-8') as history_file:
