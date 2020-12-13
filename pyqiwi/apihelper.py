@@ -169,6 +169,18 @@ def local_commission(token, pid):
     return _make_request(token, api_method)
 
 
+def full_commission(token, pid, amount, recipient):
+    api_method = "sinap/providers/{0}/onlineCommission".format(pid)
+    body = {'account': str(recipient),
+            'paymentMethod': {'type': 'Account',
+                              'accountId': '643'},
+            'purchaseTotals': {'total': float(amount)},
+            'total': {'amount': float(amount),
+                    'currency': '643'}
+            }
+    return _make_request(token, api_method, method='post', json=body)
+
+
 def get_transaction(token, txn_id, txn_type):
     api_method = 'payment-history/v2/transactions/{0}?type={1}'.format(txn_id, txn_type)
     return _make_request(token, api_method)

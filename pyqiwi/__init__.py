@@ -379,6 +379,53 @@ class Wallet:
         """
         return self.send("99", account, amount, comment=comment)
 
+    def payment_commission(self, pid, recipient, amount):
+        """
+        Полная комиссия планируемого платежа
+
+        Parameters
+        ----------
+        pid : str
+            Идентификатор провайдера.
+        recipient : str
+            Номер телефона (с международным префиксом) или номер карты/счета получателя.
+            В зависимости от провайдера.
+        amount : float/int
+            Сумма платежа.
+            Положительное число, округленное до 2 знаков после десятичной точки.
+            При большем числе знаков значение будет округлено до копеек в меньшую сторону.
+
+        Returns
+        -------
+        :float
+            Размер комиссии / None при ошибке
+        """
+        result_json = apihelper.full_commission(self.token, pid, amount, recipient)
+        commission = None
+        if result_json and ("qwCommission" in result_json):
+            commission = result_json["qwCommission"].get("amount", None)
+        return commission
+
+    def qiwi_commission(self, recipient, amount):
+        """
+        Полная комиссия планируемого перевода на киви-кошелек
+
+        Parameters
+        ----------
+        recipient : str
+            Номер телефона (с международным префиксом)
+        amount : float/int
+            Сумма платежа.
+            Положительное число, округленное до 2 знаков после десятичной точки.
+            При большем числе знаков значение будет округлено до копеек в меньшую сторону.
+
+        Returns
+        -------
+        :float
+            Размер комиссии / None при ошибке
+        """
+        return self.payment_commission("99", recipient, amount)
+
     def mobile(self, account, amount):
         """
         Оплата мобильной связи.
