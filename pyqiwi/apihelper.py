@@ -174,9 +174,10 @@ def full_commission(token, pid, amount, recipient):
     body = {'account': str(recipient),
             'paymentMethod': {'type': 'Account',
                               'accountId': '643'},
-            'purchaseTotals': {'total': float(amount)},
-            'total': {'amount': float(amount),
-                    'currency': '643'}
+            'purchaseTotals': {
+                'total': {'amount': float(amount),
+                        'currency': '643'}
+                }
             }
     return _make_request(token, api_method, method='post', json=body)
 
