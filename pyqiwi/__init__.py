@@ -486,7 +486,7 @@ def generate_form_link(pid, account, amount, comment, blocked=None, account_type
     params = util.merge_dicts(params, util.split_float(amount))
     if amount > 99999:
         raise ValueError('amount не может превышать 99999 из-за ограничений на один платеж внутри QIWI')
-    if pid == 99 and comment:
+    if pid == "99" and comment:
         params["extra['comment']"] = comment
     if account:
         params["extra['account']"] = account
@@ -495,11 +495,11 @@ def generate_form_link(pid, account, amount, comment, blocked=None, account_type
             if entry not in ['sum', 'account', 'comment']:
                 raise ValueError('Заблокированное значение может быть только sum, account или comment')
         params = util.sources_list(blocked, params, name='blocked')
-    if pid == 99999 and account_type == 0:
+    if pid == "99999" and account_type == 0:
         params["extra['accountType']"] = 'phone'
-    elif pid == 99999 and account_type == 1:
+    elif pid == "99999" and account_type == 1:
         params["extra['accountType']"] = 'nickname'
-    elif pid == 99999 and type(account_type) == str:
+    elif pid == "99999" and type(account_type) == str:
         params["extra['accountType']"] = account_type
 
     encoded_params = urlencode(params)
