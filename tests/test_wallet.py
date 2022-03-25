@@ -77,6 +77,14 @@ class TestWallet:
         online_commission = qiwi_wallet.commission('26476', qiwi_wallet.number, 100)
         assert online_commission.qw_commission.amount == 100 * saved_range.rate
 
+    def test_cross_rates(self):
+        qiwi_wallet = Wallet(TOKEN, number=NUMBER)
+        assert isinstance(qiwi_wallet, Wallet)
+        rates = qiwi_wallet.cross_rates
+        assert type(rates) == list
+        for rate in rates:
+            assert type(rate) == pyqiwi.types.Rate
+
     def test_form_link(self):
         data = {
             'pid': 99,
