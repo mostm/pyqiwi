@@ -947,8 +947,8 @@ class Rate(JsonDeserializable):
     @classmethod
     def de_json(cls, json_type):
         obj = cls.check_json(json_type)
-        _from = obj['from']
-        to = obj['to']
+        _from = int(obj['from'])
+        to = int(obj['to'])
         rate = obj['rate']
         return cls(_from, to, rate, obj)
 
