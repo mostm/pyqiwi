@@ -928,3 +928,31 @@ class Identity(JsonDeserializable):
     @property
     def check(self):
         return self.type == 'VERIFIED' and self.base_inn != self.inn
+
+
+class Rate(JsonDeserializable):
+    """
+    Курс валюты
+
+    Attributes
+    ----------
+    _from : int
+        Код входящей валюты (number-3 ISO-4217)
+    to : int
+        Код исходящей валюты (number-3 ISO-4217)
+    rate: float
+        Значение
+    """
+
+    @classmethod
+    def de_json(cls, json_type):
+        obj = cls.check_json(json_type)
+        _from = int(obj['from'])
+        to = int(obj['to'])
+        rate = obj['rate']
+        return cls(_from, to, rate, obj)
+
+    def __init__(self, _from, to, rate, obj):
+        self._from = _from
+        self.to = to
+        self.rate = rate

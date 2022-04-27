@@ -56,6 +56,23 @@ class Wallet:
             accounts.append(types.Account.de_json(account))
         return accounts
 
+    @property
+    def cross_rates(self):
+        """
+        Курсы валют QIWI Кошелька
+
+        Returns
+        -------
+        list
+            Состоит из:
+            :class:`Rate <pyqiwi.types.Rate>` - Курса.
+        """
+        result_json = apihelper.cross_rates(self.token)
+        rates = []
+        for rate in result_json['result']:
+            rates.append(types.Rate.de_json(rate))
+        return rates
+
     def balance(self, currency=643):
         """
         Баланс Visa QIWI Кошелька
@@ -503,7 +520,7 @@ def generate_form_link(pid, account, amount, comment, blocked=None, account_type
         params["extra['accountType']"] = account_type
 
     encoded_params = urlencode(params)
-    
+
     return url + '?' + encoded_params
 
 
