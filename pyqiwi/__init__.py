@@ -11,7 +11,7 @@ from urllib.parse import urlencode
 
 from . import apihelper, types, util
 
-
+proxyy = {}
 class Wallet:
     """
     Visa QIWI Кошелек
@@ -50,7 +50,7 @@ class Wallet:
 
     @property
     def accounts(self):
-        result_json = apihelper.funding_sources(self.token)
+        result_json = apihelper.funding_sources(self.token, proxy=self.proxy)
         accounts = []
         for account in result_json['accounts']:
             accounts.append(types.Account.de_json(account))
@@ -67,7 +67,7 @@ class Wallet:
             Состоит из:
             :class:`Rate <pyqiwi.types.Rate>` - Курса.
         """
-        result_json = apihelper.cross_rates(self.token)
+        result_json = apihelper.cross_rates(self.token, proxy=self.proxy)
         rates = []
         for rate in result_json['result']:
             rates.append(types.Rate.de_json(rate))
@@ -107,7 +107,7 @@ class Wallet:
     @property
     def profile(self):
         result_json = apihelper.person_profile(self.token, self.auth_info_enabled,
-                                               self.contract_info_enabled, self.user_info_enabled)
+                                               self.contract_info_enabled, self.user_info_enabled, proxy=self.proxy)
         return types.Profile.de_json(result_json)
 
     def history(self, rows=20, operation=None, start_date=None, end_date=None, sources=None, next_txn_date=None,
@@ -160,7 +160,7 @@ class Wallet:
         """
         result_json = apihelper.payment_history(self.token, self.number, rows, operation=operation,
                                                 start_date=start_date, end_date=end_date, sources=sources,
-                                                next_txn_date=next_txn_date, next_txn_id=next_txn_id)
+                                                next_txn_date=next_txn_date, next_txn_id=next_txn_id, proxy=self.proxy)
         transactions = []
         for transaction in result_json['data']:
             transactions.append(types.Transaction.de_json(transaction))
@@ -187,7 +187,7 @@ class Wallet:
         :class:`Transaction <pyqiwi.types.Transaction>`
             Транзакция
         """
-        result_json = apihelper.get_transaction(self.token, txn_id, txn_type)
+        result_json = apihelper.get_transaction(self.token, txn_id, txn_type, proxy=self.proxy)
         return types.Transaction.de_json(result_json)
 
     def stat(self, start_date=None, end_date=None, operation=None, sources=None):
@@ -228,7 +228,7 @@ class Wallet:
         else:
             end_date = datetime.datetime.utcnow()
         result_json = apihelper.total_payment_history(self.token, self.number, start_date, end_date,
-                                                      operation=operation, sources=sources)
+                                                      operation=operation, sources=sources, proxy=self.proxy)
         return types.Statistics.de_json(result_json)
 
     def commission(self, pid, recipient, amount):
@@ -252,7 +252,7 @@ class Wallet:
         :class:`OnlineCommission <pyqiwi.types.OnlineCommission>`
             Комиссия для платежа
         """
-        result_json = apihelper.online_commission(self.token, recipient, pid, amount)
+        result_json = apihelper.online_commission(self.token, recipient, pid, amount, proxy=self.proxy)
         return types.OnlineCommission.de_json(result_json)
 
     def send(self, pid, recipient, amount, comment=None, fields=None):
@@ -282,7 +282,7 @@ class Wallet:
         :class:`Payment <pyqiwi.types.Payment>`
             Платеж
         """
-        result_json = apihelper.payments(self.token, pid, amount, recipient, comment=comment, fields=fields)
+        result_json = apihelper.payments(self.token, pid, amount, recipient, comment=comment, fields=fields, proxy=self.proxy)
         return types.Payment.de_json(result_json)
 
     def identification(self, birth_date, first_name, middle_name, last_name, passport, inn=None, snils=None, oms=None):
@@ -322,7 +322,7 @@ class Wallet:
             Параметр внутри отвечающий за подтверждение успешной идентификации: Identity.check
         """
         result_json = apihelper.identification(self.token, self.number, birth_date, first_name, middle_name, last_name,
-                                               passport, inn, snils, oms)
+                                               passport, inn, snils, oms, proxy=self.proxy)
         result_json['base_inn'] = inn
         return types.Identity.de_json(result_json)
 
@@ -341,12 +341,12 @@ class Wallet:
         bool
             Был ли успешно создан счет?
         """
-        created = apihelper.create_account(self.token, self.number, account_alias)
+        created = apihelper.create_account(self.token, self.number, account_alias, proxy=self.proxy)
         return created
 
     @property
     def offered_accounts(self):
-        result_json = apihelper.get_accounts_offer(self.token, self.number)
+        result_json = apihelper.get_accounts_offer(self.token, self.number, proxy=self.proxy)
         accounts = []
         for account in result_json:
             accounts.append(types.Account.de_json(account))
@@ -372,9 +372,9 @@ class Wallet:
             ??? | Прямой возврат ответа от Qiwi API
         """
         if email:
-            return apihelper.cheque_send(self.token, txn_id, txn_type, email)
+            return apihelper.cheque_send(self.token, txn_id, txn_type, email, proxy=self.proxy)
         else:
-            return apihelper.cheque_file(self.token, txn_id, txn_type, file_format)
+            return apihelper.cheque_file(self.token, txn_id, txn_type, file_format, proxy=self.proxy)
 
     def qiwi_transfer(self, account, amount, comment=None):
         """
@@ -423,7 +423,7 @@ class Wallet:
         else:
             raise ValueError("Не удалось определить провайдера!")
 
-    def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True):
+    def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True, proxy:dict=None):
         if isinstance(number, str):
             self.number = number.replace('+', '')
             if self.number.startswith('8'):
@@ -432,6 +432,8 @@ class Wallet:
         self.auth_info_enabled = auth_info
         self.contract_info_enabled = contract_info
         self.user_info_enabled = user_info
+        self.proxy = proxy
+        proxyy = proxy
         self.get_commission = partial(get_commission, self.token)
         self.headers = {'Accept': 'application/json',
                         'Content-Type': 'application/json',
@@ -456,7 +458,7 @@ def get_commission(token, pid):
     :class:`Commission <pyqiwi.types.Commission>`
         Комиссия для платежа
     """
-    result_json = apihelper.local_commission(token, pid)
+    result_json = apihelper.local_commission(token, pid, proxy=proxyy)
     return types.Commission.de_json(result_json)
 
 
@@ -538,4 +540,4 @@ def detect_mobile(phone):
     str
         ID провайдера
     """
-    return apihelper.detect(phone)
+    return apihelper.detect(phone, proxy=proxyy)
