@@ -33,6 +33,9 @@ class Wallet:
     user_info : Optional[bool]
         Логический признак выгрузки прочих пользовательских данных.
         По умолчанию - ``True``.
+    proxy : Optional[list]
+        Логический признак выгрузки прочих пользовательских данных.
+        По умолчанию - ``None``.
 
     Attributes
     -----------
@@ -423,7 +426,7 @@ class Wallet:
         else:
             raise ValueError("Не удалось определить провайдера!")
 
-    def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True, proxy:dict=None):
+    def __init__(self, token, number=None, contract_info=True, auth_info=True, user_info=True, proxy=None):
         if isinstance(number, str):
             self.number = number.replace('+', '')
             if self.number.startswith('8'):
